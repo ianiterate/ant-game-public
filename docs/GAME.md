@@ -26,8 +26,8 @@ simplified shapes, built for URP on WebGL.
 3. **Mark a trail**: press Mark at the find and walk home. The trail you walk is laid as
    pheromone from nest to find.
 4. **Ants come.** Idle workers follow the trail at a rate set by its strength, until the
-   party is big enough. You can also *tap* a nearby ant or stand at the nest and tap to
-   send a few directly.
+   party is big enough. You can also stand at the nest and *tap* to send a few directly.
+   Tapping an ant out in the field is a later question (see Undecided).
 5. **Haul.** Once enough ants are at the find, the party carries it home. Food goes into
    the colony's stores; the colony grows.
 
@@ -56,8 +56,9 @@ converges to what the stores can carry.
 exist. Bigger finds need a higher tier: a dead insect needs a processing chamber, not just
 hands.
 
-Nursing workers are reserved first — over-recruiting for a haul starves the brood. That
-tension is deliberate and shown in the HUD.
+Nursing workers are reserved: recruitment draws only from the idle pool, and the HUD shows
+the nurses as reserved. Whether a big haul can ever pull nurses, and the brood-starvation
+tension that would come with it, is a colony-building question (see Undecided).
 
 ## Finds
 
@@ -69,15 +70,17 @@ tension is deliberate and shown in the HUD.
 | Dead insect | 10 | 2 | 120 | Needs a processing chamber; spoils. |
 | Pinecone | 16 | 3 | — | Shelter material, not food. |
 
-The player counts as one ant toward the haul party. Numbers are the first cut and live in
+The player counts as one ant toward starting the haul, while standing within reach of the
+find; the party then carries it home whether or not you stay. Numbers are the first cut and live in
 `Assets/Settings/`, not in code.
 
 ## Pheromone trails
 
 A trail is a path with one strength. It decays on its own and is reinforced by every ant
 that walks it, so an active haul keeps its own trail alive and a finished one fades. Rain
-washes trails out quickly. One player-laid trail at a time; the point is that the player's
-movement *is* the order, not a cursor.
+washes trails out quickly. One player-laid trail at a time: pressing Mark again while
+walking home abandons the one being laid, and completing a new one replaces the old. The
+point is that the player's movement *is* the order, not a cursor.
 
 ## Time, weather, threats (later milestones)
 
@@ -88,6 +91,10 @@ rival colony, winter with no new finds. Each is arithmetic against the colony's 
 not a boss fight.
 
 ## Simulation
+
+The full M1 rules — items, colony upkeep, trails, recruitment, hauling, tick order and
+tests — are specified in [SIM.md](SIM.md). Everything the player reads is in
+[UI_COPY.md](UI_COPY.md).
 
 The simulation is headless: a fixed 10 Hz tick, one seeded random source, systems run in
 a fixed order, no scene or renderer involved. The view reads the simulation; the simulation
@@ -103,8 +110,9 @@ from an older major version starts a new game.
 
 ## Controls
 
-Keyboard + mouse: WASD move, mouse look, E interact, F mark trail, Shift sprint. Gamepad:
-left stick move, right stick look, A interact, X mark, left trigger sprint. Desktop
+Keyboard + mouse: WASD move, mouse look, E interact, F mark trail, Q tap an ant, Shift
+sprint, Esc pause. Gamepad: left stick move, right stick look, A interact, X mark, Y tap,
+left trigger sprint, Start pause. Desktop
 browsers only for now (**Assumed** — mobile needs a texture and UI pass).
 
 ---
@@ -120,6 +128,13 @@ run that ends with an outcome. Blocks pacing, spawn curves and save semantics (M
 **Undecided** — death: when the player ant dies, respawn as a fresh worker, or game over;
 and whether the queen's death ends the colony. Affects tone, saves and threat tuning (M3).
 
+**Undecided** — what tapping an ant away from the nest does (redirect it, recruit it, or
+nothing). Blocks multi-trail play in M2.
+
+**Undecided** — how workers move between idle and nursing duty, and whether a large
+recruitment can pull nurses off the brood. Blocks the queen and brood (M2) and the HUD's
+nursing warning.
+
 **Undecided** — how much strategy-game is in it: embodied-only recruiting (trail and tap),
 or also orders issued from the colony panel. Affects UI from M2.
 
@@ -134,7 +149,7 @@ terms apply).
 
 ## Assumed (summary)
 
-Listed inline above: 1 u = 1 cm; 10 Hz tick, 2D on the ground plane, sim pauses when the
+Listed inline above or in [SIM.md](SIM.md): the game starts at dawn; 1 u = 1 cm; 10 Hz tick, 2D on the ground plane, sim pauses when the
 tab is hidden; float determinism on one target; NPC ants are counts; trail-graph pheromones
 rather than a diffusion grid; player counts as one ant; six-minute day, ten-day season;
 Input System, Cinemachine 3, UI Toolkit; WebGL2 with gzip + decompression fallback; desktop

@@ -12,14 +12,22 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-05 (d6a3720)
+- **Build:** 2026-10-05 (49d43eb)
+
+## What you can do right now (first slice)
+
+Walk out from the nest mound, find a sugar cube, press **Mark** next to it, and walk home.
+The path you walk becomes a pheromone trail. Idle workers follow it out, and when six ants
+are at the cube the party carries it back and the colony's food goes up. Standing at the
+nest, **Tap** sends a few workers down your trail directly. Click once in the page to lock
+the mouse; Esc releases it.
 
 ## Controls
 
-| | Move | Look | Interact | Mark trail | Sprint |
-|---|---|---|---|---|---|
-| Keyboard + mouse | W A S D | mouse | E | F | Shift |
-| Gamepad | left stick | right stick | A | X | left trigger |
+| | Move | Look | Mark trail | Tap (at nest) | Sprint | Pause / release mouse |
+|---|---|---|---|---|---|---|
+| Keyboard + mouse | W A S D | mouse | F | Q | Shift | Esc |
+| Gamepad | left stick | right stick | X | Y | left trigger | Start |
 
 Browsers only expose gamepads after a first click or key press, so press something once
 and the pad will be picked up.

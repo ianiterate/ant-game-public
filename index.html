@@ -74,10 +74,10 @@
       var buildUrl = "Build";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/966ec99f3ac301d86617971d120db891.data.unityweb",
-        frameworkUrl: buildUrl + "/9b4da3dd964b7321b99d7bfaf4cc640f.framework.js.unityweb",
-        codeUrl: buildUrl + "/d8b525d15f31ee31d9160d73968d7685.wasm.unityweb",
-        symbolsUrl: buildUrl + "/f433b73422f50d3cea6d52e2d58ea09b.symbols.json.unityweb",
+        dataUrl: buildUrl + "/4bd49408d6de7676b8b002747cfd859a.data.unityweb",
+        frameworkUrl: buildUrl + "/ae0a56a7db938492edbcba0936e0fd92.framework.js.unityweb",
+        codeUrl: buildUrl + "/e95016299c468d4d0cf8aacf8056da4f.wasm.unityweb",
+        symbolsUrl: buildUrl + "/d642e28c7c9fee1ac36b1e957ce1a94c.symbols.json.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ianiterate",
         productName: "ant-game",
@@ -87,7 +87,7 @@
         devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       };
       var script = document.createElement("script");
-      script.src = buildUrl + "/e527f0b82c5fb55802127c231b5139d4.loader.js";
+      script.src = buildUrl + "/b9826aff531b1dca191ce553e0351ade.loader.js";
       script.onload = function () {
         createUnityInstance(canvas, config, function (progress) {
           document.querySelector("#unity-bar-fill").style.width = 100 * progress + "%";
