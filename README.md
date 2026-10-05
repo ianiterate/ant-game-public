@@ -12,22 +12,27 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-05 (49d43eb)
+- **Build:** 2026-10-06 (2dd219b)
 
-## What you can do right now (first slice)
+## What you can do right now
 
-Walk out from the nest mound, find a sugar cube, press **Mark** next to it, and walk home.
-The path you walk becomes a pheromone trail. Idle workers follow it out, and when six ants
-are at the cube the party carries it back and the colony's food goes up. Standing at the
-nest, **Tap** sends a few workers down your trail directly. Click once in the page to lock
-the mouse; Esc releases it.
+You have one year. Walk out from the nest mound and find food: sugar cubes, seeds, leaves,
+dead insects. Press **Mark** next to a find and walk home; the path you walk becomes a
+pheromone trail, idle workers follow it out, and when enough of them are there the party
+carries the find back. Standing at the nest, **Tap** sends a few workers down your trail,
+and **Interact** opens the nest: a cutaway where you dig brood, store and processing
+chambers with the food you bring in. The queen lays while there is food, brood becomes
+workers in a week, and the colony's tier rises with its size and chambers. Autumn slows the
+queen and winter brings nothing new and costs more, unless you have thatched the nest with
+pinecones. The year ends when spring returns; the game saves itself in your browser each
+day. Click once in the page to lock the mouse; Esc releases it.
 
 ## Controls
 
-| | Move | Look | Mark trail | Tap (at nest) | Sprint | Pause / release mouse |
-|---|---|---|---|---|---|---|
-| Keyboard + mouse | W A S D | mouse | F | Q | Shift | Esc |
-| Gamepad | left stick | right stick | X | Y | left trigger | Start |
+| | Move | Look | Mark trail | Tap (at nest) | Nest / confirm | Sprint | Pause / release mouse |
+|---|---|---|---|---|---|---|---|
+| Keyboard + mouse | W A S D | mouse | F | Q | E | Shift | Esc |
+| Gamepad | left stick | right stick | X | Y | A | left trigger | Start |
 
 Browsers only expose gamepads after a first click or key press, so press something once
 and the pad will be picked up.

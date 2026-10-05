@@ -46,19 +46,75 @@ question (see Undecided).
 
 ## The colony
 
-The colony is counts, not characters: idle workers, nursing workers, brood, food. Workers
-leave the nest only on a job (hauling, later building and defending) and return to the
-idle pool afterwards. The queen and brood produce new workers while there is food; every
-worker costs upkeep per day. Income is capped by what the garden offers, so population
-converges to what the stores can carry.
+The colony is counts, not characters: idle workers, nurses, diggers, brood, food. Workers
+leave the nest only on a job (hauling, later defending) and return to the idle pool
+afterwards. Every worker and every brood eats each day. The queen lays while the stores are
+healthy, up to what the brood chambers hold, and brood becomes workers after seven days.
+Income is capped by what the garden offers, so population converges to what the stores can
+carry. When the stores are empty the queen stops laying, brood is lost, and about one worker
+in ten starves each day. A colony with no workers and no brood is dead.
 
-**Colony tier** is derived from population (roughly <25 / 25–75 / 75+) and which chambers
-exist. Bigger finds need a higher tier: a dead insect needs a processing chamber, not just
-hands.
+**Assumed** — the queen lays up to 5 eggs a day while the stores hold two days of food, and
+fewer when they hold less. Brood and workers each eat half a food a day. Starvation kills
+about 10% of the workers in the nest per day. Cheap to change: numbers in `Assets/Settings/`.
 
-Nursing workers are reserved: recruitment draws only from the idle pool, and the HUD shows
-the nurses as reserved. Whether a big haul can ever pull nurses, and the brood-starvation
-tension that would come with it, is a colony-building question (see Undecided).
+**Colony tier**: Young below 25 workers. Established at 25 workers with a processing chamber.
+Mature at 75 with a processing chamber and two each of brood and store chambers. A tier is
+lost only when the colony falls 5 below its threshold. Bigger finds need a higher tier: a
+dead insect needs an Established colony: a processing chamber and 25 workers, not just hands. **Assumed** — the chamber requirements
+and the margin of 5. Cheap to change.
+
+**Nursing**: the brood needs nurses, one for the queen plus one per five brood, and idle
+workers fill that need before anything else. Trails never take nurses. A tap at the nest when
+no idle worker is left can take nurses, down to half of what the brood needs. Brood left
+short-handed dies off until the nurses come back. **Assumed** — this rule, and how fast
+under-nursed brood dies. Cheap in code; it decides how many idle workers the early game has.
+
+## The nest
+
+The nest is managed from a **cutaway panel**, not walked through. Stand at the entrance and
+the colony opens as a side-on view of its chambers drawn on the mound: brood, stores,
+processing, and the slots where the next chamber can be dug. Building is a choice there,
+paid in food and worker-time; the digging happens off screen as counts. You never lose the
+third-person view or pick up a cursor. Walkable tunnels, if they ever come, are presentation
+only — a space for story, not a second way to manage the colony.
+
+There are three chambers:
+
+- **Brood**, 30 food: room for 12 more brood.
+- **Store**, 20 food: room for 150 more food. Anything delivered beyond the room is lost.
+- **Processing**, 60 food: needed to become Established.
+
+The panel is worked with the same inputs as walking: Move left and right picks a slot, Interact
+digs or confirms, Mark or Pause closes it. Nothing in the game needs a pointer. **Assumed** —
+direction-and-confirm navigation. Cheap to change; it is UI only.
+
+The colony starts with one brood chamber, one store chamber and 20 food, too little to dig
+anything: the first hauls pay for the nest. The cutaway has 4 slots to dig
+in, 7 once the colony is Established and 10 once it is Mature. One chamber is dug at a time,
+by four workers, in a day (a day and a half for processing). A dig can be cancelled for its food
+back, as far as the stores have room for it. **Assumed** — the chamber kinds, costs and slot counts, and one dig at a time.
+Cheap to change, except the slot layout, which the panel art is drawn around. **Assumed** —
+the panel orders digging only; recruiting stays with trails and taps.
+
+## The session
+
+A game is **one year**: four seasons of ten days, about four hours at the six-minute day.
+The year ends with an outcome — the colony's size and stores as winter breaks, or its
+death — and then keeps going as an open sandbox for anyone who wants to stay. Pacing,
+finds and threats are tuned to that clock; the save holds one colony.
+
+The seasons change the garden and the colony. Finds appear through spring, summer and autumn,
+and none appear in winter. Seeds and leaves are most common in autumn, dead insects in summer,
+and pinecones come through summer and autumn. The queen lays half as much in autumn and not at
+all in winter. In winter each worker eats a quarter more, unless the nest has been thatched
+with pinecones. The outcome is the number of workers alive as the new spring begins, shown
+with the stores, the peak and the year's totals. If every worker and every brood is lost
+first, the outcome is the colony's death and the day it came, and the screen offers a new
+colony in the same garden; the old save is replaced. **Assumed** — starting over after the
+colony dies is always offered. It does not pre-empt the open question about the player ant's
+or the queen's death. Cheap to change. **Assumed** — these season
+effects and the headline measure. Cheap to change.
 
 ## Finds
 
@@ -67,12 +123,18 @@ tension that would come with it, is a colony-building question (see Undecided).
 | Sugar cube | 6 | 1 | 60 | The first slice's find. |
 | Seed | 2 | 1 | 15 | Common. |
 | Leaf | 4 | 1 | 10 | Low value, light; nest material later. |
-| Dead insect | 10 | 2 | 120 | Needs a processing chamber; spoils. |
-| Pinecone | 16 | 3 | — | Shelter material, not food. |
+| Dead insect | 10 | 2 | 120 | Needs a processing chamber; spoils over three days. |
+| Pinecone | 16 | 3 | — | Shelter, not food: each one hauled home thatches the nest against winter (up to four). |
 
 The player counts as one ant toward starting the haul, while standing within reach of the
 find; the party then carries it home whether or not you stay. Numbers are the first cut and live in
 `Assets/Settings/`, not in code.
+
+Finds appear over time at random places around the nest. Each lies there a while before it is
+gone: seeds for two days, leaves for a day and a half, a sugar cube for three, a pinecone for
+four. A find you have marked stays until it is hauled. There are no scout ants: every find is
+found and marked by you. **Assumed** — the spawn rates and lifetimes, and no scouts. Cheap to
+change, though scouts would need the economy retuned so that they do not replace the player.
 
 ## Pheromone trails
 
@@ -87,14 +149,15 @@ point is that the player's movement *is* the order, not a cursor.
 A day is **Assumed** six real minutes, a season ten days. Night slows foraging and brings
 predators. Weather is clear / overcast / rain; rain reverses outbound ants and washes
 trails. Threats: spiders on patrol, a bird taking ants off a trail segment, raids from a
-rival colony, winter with no new finds. Each is arithmetic against the colony's counts,
-not a boss fight.
+rival colony. Each is arithmetic against the colony's counts, not a boss fight. Winter is
+already part of the year (see The session).
 
 ## Simulation
 
 The full M1 rules — items, colony upkeep, trails, recruitment, hauling, tick order and
-tests — are specified in [SIM.md](SIM.md). Everything the player reads is in
-[UI_COPY.md](UI_COPY.md).
+tests — are specified in [SIM.md](SIM.md). Colony building — chambers, queen and brood, tier,
+finds that come and go, the year and its outcome, saves — is in [SIM_M2.md](SIM_M2.md).
+Everything the player reads is in [UI_COPY.md](UI_COPY.md).
 
 The simulation is headless: a fixed 10 Hz tick, one seeded random source, systems run in
 a fixed order, no scene or renderer involved. The view reads the simulation; the simulation
@@ -105,8 +168,9 @@ does not know the view exists. **Assumed** — reproducible on a single build ta
 lightweight records on a trail when outside. Expensive to change if named ants are ever
 wanted; cheap otherwise, and it is what makes hundreds of ants free on WebGL.
 
-**Assumed** — saves are JSON in browser storage with a version field from day one; a save
-from an older major version starts a new game.
+**Assumed** — saves are JSON in browser storage with a version field from day one, one slot,
+written each game day and whenever the game loses focus, pauses or closes. A save too old to convert starts a new colony; a save from a newer
+build is never overwritten.
 
 ## Controls
 
@@ -119,21 +183,11 @@ browsers only for now (**Assumed** — mobile needs a texture and UI pass).
 
 ## Undecided
 
-**Undecided** — nest interior: walkable 3D tunnels you enter, or a 2D cutaway panel.
-Blocks colony building (M2). Walkable roughly doubles that milestone.
-
-**Undecided** — session shape: open-ended sandbox with a persistent colony, or a one-year
-run that ends with an outcome. Blocks pacing, spawn curves and save semantics (M2).
-
 **Undecided** — death: when the player ant dies, respawn as a fresh worker, or game over;
 and whether the queen's death ends the colony. Affects tone, saves and threat tuning (M3).
 
 **Undecided** — what tapping an ant away from the nest does (redirect it, recruit it, or
-nothing). Blocks multi-trail play in M2.
-
-**Undecided** — how workers move between idle and nursing duty, and whether a large
-recruitment can pull nurses off the brood. Blocks the queen and brood (M2) and the HUD's
-nursing warning.
+nothing). Blocks multi-trail play, which M2 does not include.
 
 **Undecided** — how much strategy-game is in it: embodied-only recruiting (trail and tap),
 or also orders issued from the colony panel. Affects UI from M2.
@@ -153,4 +207,8 @@ Listed inline above or in [SIM.md](SIM.md): the game starts at dawn; 1 u = 1 cm;
 tab is hidden; float determinism on one target; NPC ants are counts; trail-graph pheromones
 rather than a diffusion grid; player counts as one ant; six-minute day, ten-day season;
 Input System, Cinemachine 3, UI Toolkit; WebGL2 with gzip + decompression fallback; desktop
-browsers only; versioned JSON saves; commercial-safe asset licences only.
+browsers only; versioned JSON saves; commercial-safe asset licences only. From
+[SIM_M2.md](SIM_M2.md): nursing need and taps that take nurses; queen laying, brood and
+starvation rates; chamber kinds, costs and slots; tier chamber requirements; find spawning and
+lifetimes; pinecones as shelter; winter costs more; outcome = workers alive as spring begins;
+no scout ants; the panel orders digging only.

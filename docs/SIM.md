@@ -246,9 +246,8 @@ nothing in M1. Cheap to change.
 **Assumed** — in M1 nursing is a fixed count and recruitment draws only from `Idle`.
 Cheap to change until M2 brood work starts.
 
-**Undecided** — how workers move between Idle and Nursing, and whether a big recruitment
-can pull nurses (GAME.md: "over-recruiting for a haul starves the brood"). Blocks M2 brood
-and queen, and the HUD's nursing warning. Not needed for M1.
+How workers move between Idle and Nursing in M2, and when a tap may take nurses, is in
+[SIM_M2.md](SIM_M2.md) §2.4–2.6 (**Assumed** there).
 
 ---
 
