@@ -3,30 +3,95 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#2a211a">
     <title>ant-game</title>
     <style>
-      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0e1016; }
+      /* The HUD palette (Assets/Scripts/UI/Hud.uss): soil-brown ground, warm off-white text, amber
+         accent. The canvas and the in-game BootCover use the same ground, so the hand-off from this
+         page to the first rendered frame has no flash. */
+      :root {
+        --ground: #2a211a;
+        --ground-deep: #1e1712;
+        --text: #f0e6d8;
+        --text-muted: #c9b9a3;
+        --text-dim: #8f7f6b;
+        --accent: #e0a040;
+        --track: rgba(240, 230, 216, 0.12);
+        --edge: rgba(224, 160, 64, 0.35);
+        --error: #e07a50;
+      }
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--ground); }
       #unity-container { position: fixed; inset: 0; }
       /* The canvas fills the window at every size; Unity sizes its render target from the DOM size.
          The default template instead renders a fixed 1600x900 canvas that crops in smaller windows. */
-      #unity-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #0e1016; outline: none; touch-action: none; }
+      #unity-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: var(--ground); outline: none; touch-action: none; }
+
+      /* Loading screen, then the start prompt, then nothing. */
       #unity-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        color: #cfd6e6; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; background: #0e1016; }
-      #unity-loading h1 { font-size: 30px; font-weight: 500; letter-spacing: 3px; margin: 0 0 18px; text-transform: lowercase; }
-      #unity-bar { width: 300px; height: 6px; background: #1c2130; border: 1px solid #2c3550; border-radius: 3px; overflow: hidden; }
-      #unity-bar-fill { width: 0; height: 100%; background: #5b8def; }
-      #unity-hint { margin-top: 18px; color: #7c869c; font-size: 13px; }
-      #unity-warning { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); color: #fff; font: 14px sans-serif; }
-      #unity-warning div { margin: 4px 0; padding: 8px 12px; border-radius: 4px; }
+        padding: 0 16px; box-sizing: border-box; text-align: center;
+        color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: radial-gradient(ellipse at 50% 45%, var(--ground) 0%, var(--ground) 45%, var(--ground-deep) 100%);
+        transition: opacity 0.35s ease, background-color 0.35s ease; }
+      #unity-loading.is-ready { cursor: pointer; }
+      #unity-loading.is-gone { opacity: 0; pointer-events: none; }
+      #unity-title { margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.32em; text-transform: lowercase; color: var(--accent); }
+      #unity-tagline { margin: 0 0 28px; max-width: min(30em, 100%); font-size: 20px; font-weight: 400; color: var(--text); }
+      #unity-bar { width: 220px; max-width: 70vw; height: 3px; background: var(--track); border-radius: 2px; overflow: hidden; }
+      #unity-bar-fill { width: 0; height: 100%; background: var(--accent); transition: width 0.2s linear; }
+      #unity-status { margin-top: 14px; min-height: 1.45em; font-size: 13px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+      #unity-start { display: none; margin: 0; padding: 10px 22px; font: inherit; font-size: 16px; color: var(--text);
+        background: transparent; border: 1px solid var(--edge); border-radius: 6px; cursor: pointer; }
+      #unity-start:hover, #unity-start:focus-visible { border-color: var(--accent); color: #fff; outline: none; }
+      #unity-start-hint { display: none; margin-top: 12px; font-size: 13px; color: var(--text-dim); }
+      #unity-loading.is-ready #unity-bar, #unity-loading.is-ready #unity-status { display: none; }
+      #unity-loading.is-ready #unity-start, #unity-loading.is-ready #unity-start-hint { display: block; }
+      #unity-mobile { display: none; margin-top: 22px; font-size: 13px; color: var(--text-muted); }
+      #unity-mobile.is-shown { display: block; }
+
+      /* A failed load replaces the loading screen; a later runtime error shows the same panel. */
+      #unity-error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+        padding: 16px; box-sizing: border-box; background: rgba(30, 23, 18, 0.94);
+        color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      #unity-error.is-shown { display: flex; }
+      #unity-error .panel { width: 100%; max-width: 440px; padding: 20px 22px; box-sizing: border-box;
+        background: var(--ground); border: 1px solid var(--edge); border-radius: 6px; }
+      #unity-error h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; color: var(--error); }
+      #unity-error p { margin: 0 0 14px; color: var(--text-muted); }
+      #unity-error-detail { margin: 0 0 16px; padding: 8px 10px; max-height: 8em; overflow: auto; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace;
+        color: var(--text-dim); background: var(--ground-deep); border-radius: 4px; white-space: pre-wrap; word-break: break-word; }
+      #unity-error-detail:empty { display: none; }
+      #unity-error button { padding: 8px 18px; font: inherit; color: var(--ground); background: var(--accent); border: 0; border-radius: 4px; cursor: pointer; }
+      #unity-error button.quiet { margin-left: 8px; color: var(--text-muted); background: transparent; border: 1px solid var(--edge); }
+
+      /* Unity's own non-fatal notices (showBanner "warning" / "info"). */
+      #unity-warning { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); max-width: calc(100% - 32px);
+        color: var(--text); font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      #unity-warning div { margin: 4px 0; padding: 8px 12px; border-radius: 4px; background: var(--ground); border: 1px solid var(--edge); }
+
+      @media (prefers-reduced-motion: reduce) {
+        #unity-loading, #unity-bar-fill { transition: none; }
+      }
     </style>
   </head>
   <body>
     <div id="unity-container">
       <canvas id="unity-canvas" tabindex="-1"></canvas>
       <div id="unity-loading">
-        <h1>ant-game</h1>
-        <div id="unity-bar"><div id="unity-bar-fill"></div></div>
-        <div id="unity-hint">keyboard (WASD + mouse) · gamepad</div>
+        <h1 id="unity-title">ant-game</h1>
+        <p id="unity-tagline">You are one ant. The colony follows your trail.</p>
+        <div id="unity-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="unity-bar-fill"></div></div>
+        <div id="unity-status" aria-live="polite">Loading</div>
+        <button id="unity-start" type="button">Click to start</button>
+        <div id="unity-start-hint">Esc releases the mouse.</div>
+        <div id="unity-mobile">Desktop browsers only, for now.</div>
+      </div>
+      <div id="unity-error" role="alert">
+        <div class="panel">
+          <h2 id="unity-error-title">The game could not start.</h2>
+          <p id="unity-error-text">Reload the page to try again. A desktop browser with WebGL 2 works best.</p>
+          <pre id="unity-error-detail"></pre>
+          <button id="unity-error-reload" type="button">Reload</button><button id="unity-error-dismiss" class="quiet" type="button">Dismiss</button>
+        </div>
       </div>
       <div id="unity-warning"></div>
     </div>
@@ -60,43 +125,129 @@
     </script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
+      var loading = document.querySelector("#unity-loading");
+      var bar = document.querySelector("#unity-bar");
+      var barFill = document.querySelector("#unity-bar-fill");
+      var statusLine = document.querySelector("#unity-status");
+      var startButton = document.querySelector("#unity-start");
+      var errorPanel = document.querySelector("#unity-error");
+      var ready = false;     // createUnityInstance resolved: the game is running under the prompt
+      var started = false;   // the player clicked through the prompt
+      var errorShown = false;
+
+      // Touch-first devices: the game needs a keyboard and mouse or a gamepad. Loading still runs.
+      try {
+        if (navigator.maxTouchPoints > 0 && !(window.matchMedia && window.matchMedia("(pointer:fine)").matches)) {
+          document.querySelector("#unity-mobile").className = "is-shown";
+        }
+      } catch (e) {}
+
+      // One readable panel for every error; never alert(), which itch.io embeds block or stack.
+      // fatal: the game never started, so the loading screen goes and there is nothing to dismiss to.
+      function showError(detail, fatal) {
+        console.error(detail);
+        if (errorShown) return;
+        errorShown = true;
+        if (fatal) {
+          loading.style.display = "none";
+        } else {
+          document.querySelector("#unity-error-title").textContent = "Something went wrong.";
+          document.querySelector("#unity-error-text").textContent =
+            "The game hit an error and may have stopped. Reload the page to carry on from the last save.";
+        }
+        document.querySelector("#unity-error-detail").textContent = detail == null ? "" : String(detail);
+        document.querySelector("#unity-error-dismiss").style.display = fatal ? "none" : "";
+        errorPanel.className = "is-shown";
+        try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+      }
+      document.querySelector("#unity-error-reload").addEventListener("click", function () { window.location.reload(); });
+      document.querySelector("#unity-error-dismiss").addEventListener("click", function () {
+        errorPanel.className = "";
+        errorShown = false;
+      });
+
+      // Unity's notices. Errors go to the panel; warnings and info show briefly at the top.
       function unityShowBanner(msg, type) {
+        if (type == "error") { showError(msg, !ready); return; }
         var banner = document.querySelector("#unity-warning");
         var div = document.createElement("div");
-        div.innerHTML = msg;
+        div.textContent = msg;
         banner.appendChild(div);
-        if (type == "error") div.style.background = "#8a1f1f";
-        else {
-          div.style.background = "#2c3550";
-          setTimeout(function () { banner.removeChild(div); }, 5000);
+        setTimeout(function () { if (div.parentNode) div.parentNode.removeChild(div); }, 5000);
+      }
+
+      function onProgress(progress) {
+        var p = Math.max(0, Math.min(1, progress || 0));
+        barFill.style.width = 100 * p + "%";
+        bar.setAttribute("aria-valuenow", String(Math.round(100 * p)));
+        // The loader reports downloads up to 0.9; the rest is the engine starting up.
+        var text = p >= 0.9 ? "Starting" : "Loading";
+        if (statusLine.textContent !== text) statusLine.textContent = text;
+      }
+
+      // The browser grants pointer lock only inside a user gesture, and may refuse it anyway
+      // (a throw, or a rejected promise in newer browsers). A refusal is harmless: the game's
+      // PointerLock.jslib asks again on the next click into the canvas.
+      function requestPointerLock() {
+        if (typeof canvas.requestPointerLock !== "function") return;
+        try {
+          var result = canvas.requestPointerLock();
+          if (result && typeof result.then === "function") {
+            result.then(null, function (err) { console.debug("Pointer lock refused: " + (err && err.name ? err.name : err)); });
+          }
+        } catch (err) {
+          console.debug("Pointer lock refused: " + (err && err.name ? err.name : err));
         }
       }
+
+      // The prompt swallows the first click, so this click is also the one that locks the mouse
+      // and gives the canvas keyboard focus; the game sees no stray click under the prompt.
+      function startGame(e) {
+        if (!ready || started) return;
+        if (e && typeof e.button === "number" && e.button !== 0) return;
+        started = true;
+        try { canvas.focus(); } catch (err) {}
+        requestPointerLock();
+        loading.className = "is-ready is-gone";
+        setTimeout(function () { loading.style.display = "none"; }, 400);
+      }
+      loading.addEventListener("click", startGame);
+
       var buildUrl = "Build";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/d36ae3de8dbd7cf10fd08ec57f58f7b1.data.unityweb",
-        frameworkUrl: buildUrl + "/db7fefd23eec9dd872d58ebcbc86777e.framework.js.unityweb",
-        codeUrl: buildUrl + "/537540e94b0a5e41501c16d60b37636d.wasm.unityweb",
-        symbolsUrl: buildUrl + "/0f4a86d80a48f681c28351f16b1824b0.symbols.json.unityweb",
+        dataUrl: buildUrl + "/b2c4f281e8fd30a4c29ff8b72f3866f9.data.unityweb",
+        frameworkUrl: buildUrl + "/9f8da1bd180b56e0e6e63b11cbe305bd.framework.js.unityweb",
+        codeUrl: buildUrl + "/bf3efc570aec7d63b4ded8df456e37c6.wasm.unityweb",
+        symbolsUrl: buildUrl + "/cd799daf5b14c68628978321e9496723.symbols.json.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ianiterate",
         productName: "ant-game",
         productVersion: "0.1.0",
         showBanner: unityShowBanner,
+        // Runtime errors after start-up. Returning true stops the loader falling back to alert().
+        errorHandler: function (message) {
+          showError(message, !ready);
+          return true;
+        },
         // Cap the pixel ratio so a retina display is not asked to shade four times the pixels.
         devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       };
       var script = document.createElement("script");
-      script.src = buildUrl + "/d2a2e614ad04d286c5ff5c697cf03e39.loader.js";
+      script.src = buildUrl + "/3ff54fcb352781eab938083c1e954fb7.loader.js";
       script.onload = function () {
-        createUnityInstance(canvas, config, function (progress) {
-          document.querySelector("#unity-bar-fill").style.width = 100 * progress + "%";
-        }).then(function (unityInstance) {
-          document.querySelector("#unity-loading").style.display = "none";
-          canvas.focus();
+        createUnityInstance(canvas, config, onProgress).then(function (unityInstance) {
+          if (errorShown) return;
+          ready = true;
+          onProgress(1);
+          loading.className = "is-ready";
+          try { startButton.focus({ preventScroll: true }); } catch (e) {}
         }).catch(function (message) {
-          unityShowBanner(message, "error");
+          showError(message, true);
         });
+      };
+      script.onerror = function () {
+        showError("Could not download " + script.src + ".", true);
       };
       document.body.appendChild(script);
     </script>

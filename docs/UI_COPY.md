@@ -632,3 +632,28 @@ Added under `outcome.line.totals` on both cards.
 
 `outcome.line.defence` is the one 52-character line. The outcome card allows it; the rest stay
 at 48.
+
+---
+
+## Web page
+
+The loading screen, start prompt and error panel of the web build. These strings live in
+`Assets/WebGLTemplates/AntGame/index.html`, not in `Strings.cs`: they show before the game runs.
+The title is the product name, `ant-game`.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `web.tagline` | You are one ant. The colony follows your trail. | Under the title, while loading and at the start prompt | 60 |
+| `web.loading` | Loading | Under the bar while the build downloads | 16 |
+| `web.starting` | Starting | Under the bar once the download is done and the engine starts | 16 |
+| `web.start` | Click to start | Once the game is running. One click starts it and locks the mouse | 20 |
+| `web.start.hint` | Esc releases the mouse. | Under `web.start` | 40 |
+| `web.mobile` | Desktop browsers only, for now. | On touch devices with no fine pointer. Loading still runs | 40 |
+| `web.error.title` | The game could not start. | The build failed to load | 40 |
+| `web.error.text` | Reload the page to try again. A desktop browser with WebGL 2 works best. | Under `web.error.title`, with the loader's message below in small type | 80 |
+| `web.error.runtime.title` | Something went wrong. | A script error after the game started | 40 |
+| `web.error.runtime.text` | The game hit an error and may have stopped. Reload the page to carry on from the last save. | Under `web.error.runtime.title` | 100 |
+| `web.error.reload` / `web.error.dismiss` | Reload / Dismiss | Buttons on the error panel. Dismiss only after a runtime error | 12 |
+
+**Assumed** — the tagline is "You are one ant. The colony follows your trail." It was written
+with the loading screen, not by the world-builder. Cost to change: one string in the template.
