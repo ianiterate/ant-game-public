@@ -214,11 +214,21 @@ wanted; cheap otherwise, and it is what makes hundreds of ants free on WebGL.
 written each game day and whenever the game loses focus, pauses or closes. A save too old to convert starts a new colony; a save from a newer
 build is never overwritten.
 
+## Sound
+
+The garden is heard as much as seen: a meadow bed by day, crickets by night, rain when it
+rains, with a faint bird layer in clear daylight. Ants near you skitter; a spider's strike
+lands with a thud; the bird's shadow arrives on a wing-beat; raiders chitter as they march.
+Short stings mark a delivery, the year's end and the colony's death. The nest panel and the
+cards duck everything underneath them. All sound is CC0 from freesound, Kenney and
+OpenGameArt and is credited in the attribution file that ships with the build. **Assumed** —
+the mix levels and which events get a cue; cheap to change in the Audio Bank asset.
+
 ## Controls
 
 Keyboard + mouse: WASD move, mouse look, E interact, F mark trail, Q tap an ant, Shift
-sprint, Esc pause. Gamepad: left stick move, right stick look, A interact, X mark, Y tap,
-left trigger sprint, Start pause. Desktop
+sprint, Esc pause (a second Esc opens credits and sound). Gamepad: left stick move, right
+stick look, A interact, X mark, Y tap, left trigger sprint, Start pause. Desktop
 browsers only for now (**Assumed** — mobile needs a texture and UI pass).
 
 ---

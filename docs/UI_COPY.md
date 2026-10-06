@@ -19,7 +19,7 @@ text here is the source for the string table. The rules behind each line are in
 
 ## Format
 
-- `{name}` is a parameter. `[Mark]`, `[Tap]` and `[Interact]` are key glyphs drawn from the
+- `{name}` is a parameter. `[Mark]`, `[Tap]`, `[Interact]` and `[Pause]` are key glyphs drawn from the
   active device. They match the action names in `AntControls.inputactions`.
 - Max length is in English characters, and a glyph counts as 3. Layouts must allow translations to run 30% longer.
 - Every string is a whole label or a whole sentence, never assembled from other strings.
@@ -632,6 +632,38 @@ Added under `outcome.line.totals` on both cards.
 
 `outcome.line.defence` is the one 52-character line. The outcome card allows it; the rest stay
 at 48.
+
+---
+
+## Credits and sound
+
+One panel over the game, opened with Pause while the mouse is already free (the first Pause
+releases it, the second opens the panel) and nothing else is open. Pause or `[Mark]` closes it, and
+so does a click back into the game. Two volume rows at the top; below them the credits, which
+are `Assets/ThirdParty/ATTRIBUTION.md` as shipped with the build.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `hint.credits` | [Pause] Credits and sound | HUD, under the first-run hint, while the mouse is free and no panel or card is up | 30 |
+| `credits.title` | Who made the garden | Panel title | 30 |
+| `credits.volume.master` | Volume | First row: `AudioVolumes.Master` | 12 |
+| `credits.volume.sounds` | Sounds | Second row: `AudioVolumes.Sfx`; Music follows it | 12 |
+| `credits.volume.value` | {n}% | Each row's value, 0 to 100 in steps of 10 | 5 |
+| `credits.prompt.move` | Up and down to read. Left and right to set the sound. | Panel foot | 60 |
+| `credits.prompt.close` | [Mark] Back to the garden | Panel foot, under `credits.prompt.move` | 30 |
+| `credits.missing` | The credits are missing from this build. | In place of the credits when the build has no attribution text | 50 |
+
+**Assumed** — every line in this section. The title "Who made the garden" says the credits are
+the people whose work is in the game, without the word "credits" twice on screen. The rows are
+"Volume" and "Sounds", not "Master" and "Effects": a player does not think in mixer buses.
+Written by the gameplay engineer, not the world-builder. Cost to change: one string each.
+
+**Assumed** — there is no separate music row yet. The Sounds row moves Music with it, keeping
+the default balance between them (Music is Sounds × 0.6 / 0.8). Cost to change: one row and one
+string when the game gets music worth its own slider.
+
+**Assumed** — `hint.credits` shows whenever the mouse is free, so a gamepad player, whose mouse
+is never locked, always sees it. Cost to change: one condition in the HUD.
 
 ---
 
