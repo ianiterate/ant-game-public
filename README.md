@@ -12,7 +12,7 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-06 (b280de0)
+- **Build:** 2026-10-06 (d034a00)
 
 ## What you can do right now
 
@@ -46,6 +46,9 @@ mouse; Esc releases it.
 |---|---|---|---|---|---|---|---|
 | Keyboard + mouse | W A S D | mouse | F | Q | E | Shift | Esc |
 | Gamepad | left stick | right stick | X | Y | A | left trigger | Start |
+| Touch | joystick under the left thumb | drag on the right half | Mark | Tap | Interact (shows Nest or Alarm) | Run (tap on, tap off) | Menu |
+
+Phones and tablets work in landscape, with the on-screen controls above; held upright, the page asks you to turn the device.
 
 Browsers only expose gamepads after a first click or key press, so press something once
 and the pad will be picked up.

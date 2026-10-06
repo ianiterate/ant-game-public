@@ -4,7 +4,8 @@ Every string the player reads. The sections from *Names* to *First-run hints* ar
 vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, the year and saves, and
 [M3 — weather and threats](#m3--weather-and-threats) adds weather, spiders, birds, raids and the
 player ant's death, and [M5 — Purpose](#m5--purpose) adds the opening card, the winter bar,
-the season goals and the antennae sense. Code references the **key**; the
+the season goals and the antennae sense, and [Touch](#touch) adds the on-screen buttons of
+phones and tablets. Code references the **key**; the
 text here is the source for the string table. The rules behind each line are in
 [GAME.md](GAME.md) and [SIM.md](SIM.md). This file only puts them into words.
 
@@ -668,7 +669,7 @@ are `Assets/ThirdParty/ATTRIBUTION.md` as shipped with the build.
 
 | key | text | when shown | max |
 |---|---|---|---|
-| `hint.credits` | [Pause] Credits and sound | HUD, under the first-run hint, while the mouse is free and no panel or card is up | 30 |
+| `hint.credits` | [Pause] Credits and sound | HUD, under the first-run hint, while the mouse is free and no panel or card is up. Not on touch | 30 |
 | `credits.title` | Who made the garden | Panel title | 30 |
 | `credits.volume.master` | Volume | First row: `AudioVolumes.Master` | 12 |
 | `credits.volume.sounds` | Sounds | Second row: `AudioVolumes.Sfx`; Music follows it | 12 |
@@ -854,10 +855,49 @@ draws which are free. Cost to change: one parameter.
 
 ---
 
+## Touch
+
+Phones and tablets, in landscape. A left-thumb joystick moves, a drag on the right half of the
+screen looks, and round buttons in the bottom-right corner stand in for the keys; Menu sits in the
+top-right corner. "Touch device" here means the web page's test: a touch screen and no fine
+pointer, or `?touch=1` in the address. The labels are the device's button names, so the
+`[Mark]`, `[Tap]`, `[Interact]` and `[Pause]` glyphs in every other string read as the same words
+("Mark", "Tap", "Interact", "Menu") on touch. Button labels are one word, no full stop.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `touch.button.mark` | Mark | The largest button, while no panel is open | 8 |
+| `touch.button.tap` | Tap | Button, while no panel is open | 8 |
+| `touch.button.interact` | Interact | Interact button, while no panel is open and neither label below applies | 8 |
+| `touch.button.interact.nest` | Nest | Interact button, at the nest, where Interact opens the nest panel | 8 |
+| `touch.button.interact.alarm` | Alarm | Interact button, where Interact raises the alarm against the bird | 8 |
+| `touch.button.sprint` | Run | The smallest corner button, while no panel is open. A latch: tap to run, tap again to walk | 5 |
+| `touch.button.pause` | Menu | Top-right corner, always. Opens credits and sound on the first press | 5 |
+| `touch.button.back` | Back | The Mark button, while the nest panel is open | 8 |
+| `touch.button.confirm` | Confirm | The Interact button, while the nest panel is open | 8 |
+
+`hint.credits` is not shown on touch.
+
+**Assumed** — `hint.credits` is hidden on touch because the Menu button says what it is and
+is always on screen. Cost to change: one condition in the HUD.
+
+**Assumed** — the button words are the action names, plus "Run" for Sprint (shorter, and what
+a player calls it) and "Menu" for Pause (there is nothing to pause or release on touch: it opens
+credits and sound). Written with the touch plan, not by a copy pass. Cost to change: one string
+each; Sprint and Menu are the device's button names, so `InputGlyphs` follows them.
+
+**Assumed** — Run is a latch rather than a button held down, because a thumb cannot hold it
+and steer the camera at once. It turns itself off half a second after the joystick is let go.
+Cost to change: cheap, one behaviour in the overlay.
+
+---
+
 ## Web page
 
 The loading screen, start prompt and error panel of the web build. These strings live in
 `Assets/WebGLTemplates/AntGame/index.html`, not in `Strings.cs`: they show before the game runs.
+`web.start.touch` and `web.rotate` are mirrored in `Strings.cs` as well; the template's copy is the
+one players see.
 The title is the product name, `ant-game`.
 
 | key | text | when shown | max |
@@ -866,10 +906,12 @@ The title is the product name, `ant-game`.
 | `web.loading` | Loading | Under the bar while the build downloads | 16 |
 | `web.starting` | Starting | Under the bar once the download is done and the engine starts | 16 |
 | `web.start` | Click to start | Once the game is running. One click starts it and locks the mouse | 20 |
-| `web.start.hint` | Esc releases the mouse. | Under `web.start` | 40 |
-| `web.mobile` | Desktop browsers only, for now. | On touch devices with no fine pointer. Loading still runs | 40 |
+| `web.start.touch` | Tap to start | In place of `web.start` on a touch device. One tap starts it; there is no mouse to lock | 20 |
+| `web.start.hint` | Esc releases the mouse. | Under `web.start`. Not on a touch device | 40 |
+| `web.rotate` | Turn your device sideways | Over the whole page on a touch device held upright. The game keeps running underneath | 40 |
+| ~~`web.mobile`~~ | ~~Desktop browsers only, for now.~~ | Removed in M6: phones and tablets play with on-screen controls | — |
 | `web.error.title` | The game could not start. | The build failed to load | 40 |
-| `web.error.text` | Reload the page to try again. A desktop browser with WebGL 2 works best. | Under `web.error.title`, with the loader's message below in small type | 80 |
+| `web.error.text` | Reload the page to try again. A browser with WebGL 2 works best. | Under `web.error.title`, with the loader's message below in small type | 80 |
 | `web.error.runtime.title` | Something went wrong. | A script error after the game started | 40 |
 | `web.error.runtime.text` | The game hit an error and may have stopped. Reload the page to carry on from the last save. | Under `web.error.runtime.title` | 100 |
 | `web.error.reload` / `web.error.dismiss` | Reload / Dismiss | Buttons on the error panel. Dismiss only after a runtime error | 12 |

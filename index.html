@@ -45,8 +45,19 @@
       #unity-start-hint { display: none; margin-top: 12px; font-size: 13px; color: var(--text-dim); }
       #unity-loading.is-ready #unity-bar, #unity-loading.is-ready #unity-status { display: none; }
       #unity-loading.is-ready #unity-start, #unity-loading.is-ready #unity-start-hint { display: block; }
-      #unity-mobile { display: none; margin-top: 22px; font-size: 13px; color: var(--text-muted); }
-      #unity-mobile.is-shown { display: block; }
+      /* Touch: nothing to release, so no Esc hint. */
+      body.touch #unity-loading.is-ready #unity-start-hint { display: none; }
+
+      /* Phones and tablets play in landscape. Browsers cannot lock the orientation, so portrait
+         covers the page with a prompt; the game keeps running underneath. */
+      #unity-rotate { position: fixed; inset: 0; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center;
+        padding: env(safe-area-inset-top, 0) 16px env(safe-area-inset-bottom, 0); box-sizing: border-box; text-align: center;
+        color: var(--text); font: 18px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: radial-gradient(ellipse at 50% 45%, var(--ground) 0%, var(--ground) 45%, var(--ground-deep) 100%); }
+      #unity-rotate svg { width: 56px; height: 56px; margin-bottom: 18px; color: var(--accent); }
+      @media (orientation: portrait) and (pointer: coarse) {
+        body.touch #unity-rotate { display: flex; }
+      }
 
       /* A failed load replaces the loading screen; a later runtime error shows the same panel. */
       #unity-error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
@@ -83,17 +94,22 @@
         <div id="unity-status" aria-live="polite">Loading</div>
         <button id="unity-start" type="button">Click to start</button>
         <div id="unity-start-hint">Esc releases the mouse.</div>
-        <div id="unity-mobile">Desktop browsers only, for now.</div>
       </div>
       <div id="unity-error" role="alert">
         <div class="panel">
           <h2 id="unity-error-title">The game could not start.</h2>
-          <p id="unity-error-text">Reload the page to try again. A desktop browser with WebGL 2 works best.</p>
+          <p id="unity-error-text">Reload the page to try again. A browser with WebGL 2 works best.</p>
           <pre id="unity-error-detail"></pre>
           <button id="unity-error-reload" type="button">Reload</button><button id="unity-error-dismiss" class="quiet" type="button">Dismiss</button>
         </div>
       </div>
       <div id="unity-warning"></div>
+    </div>
+    <div id="unity-rotate" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7v10"/>
+      </svg>
+      <div>Turn your device sideways</div>
     </div>
     <script>
       // iOS mutes the Web Audio API while the ringer switch is on silent. A playing <audio>
@@ -135,12 +151,23 @@
       var started = false;   // the player clicked through the prompt
       var errorShown = false;
 
-      // Touch-first devices: the game needs a keyboard and mouse or a gamepad. Loading still runs.
+      // Touch-first devices get the on-screen controls. Decided once, here, and published as
+      // window.AntGameIsTouch so the game's TouchWeb.jslib can read the same answer as the page.
+      // ?touch=1 or ?touch=0 overrides the guess (device emulation, testing), as in TouchMode.
+      var isTouch = false;
       try {
-        if (navigator.maxTouchPoints > 0 && !(window.matchMedia && window.matchMedia("(pointer:fine)").matches)) {
-          document.querySelector("#unity-mobile").className = "is-shown";
+        var touchParam = new URLSearchParams(window.location.search).get("touch");
+        if (touchParam === "1" || touchParam === "0") {
+          isTouch = touchParam === "1";
+        } else {
+          isTouch = navigator.maxTouchPoints > 0 && !(window.matchMedia && window.matchMedia("(pointer:fine)").matches);
         }
       } catch (e) {}
+      window.AntGameIsTouch = isTouch;
+      if (isTouch) {
+        document.body.classList.add("touch");
+        startButton.textContent = "Tap to start";
+      }
 
       // One readable panel for every error; never alert(), which itch.io embeds block or stack.
       // fatal: the game never started, so the loading screen goes and there is nothing to dismiss to.
@@ -202,24 +229,35 @@
 
       // The prompt swallows the first click, so this click is also the one that locks the mouse
       // and gives the canvas keyboard focus; the game sees no stray click under the prompt.
+      // On touch there is no mouse to lock: the tap only starts the game.
       function startGame(e) {
         if (!ready || started) return;
         if (e && typeof e.button === "number" && e.button !== 0) return;
         started = true;
         try { canvas.focus(); } catch (err) {}
-        requestPointerLock();
+        if (!isTouch) requestPointerLock();
         loading.className = "is-ready is-gone";
         setTimeout(function () { loading.style.display = "none"; }, 400);
       }
+      // A mouse starts on click, where desktop browsers grant pointer lock. A finger starts on
+      // lift (pointerup, then touchend, whichever comes first; `started` stops the second), and
+      // the touchend is cancelled so the browser does not follow it with a click on the canvas.
       loading.addEventListener("click", startGame);
+      loading.addEventListener("pointerup", function (e) {
+        if (e.pointerType !== "mouse") startGame(e);
+      });
+      loading.addEventListener("touchend", function (e) {
+        startGame(e);
+        if (started && e.cancelable) e.preventDefault();
+      });
 
       var buildUrl = "Build";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/fae15a82930b0763d301cf2d437f8c08.data.unityweb",
-        frameworkUrl: buildUrl + "/37b1cddbefa5574340b0f99ea489824e.framework.js.unityweb",
-        codeUrl: buildUrl + "/7c80dab2ec089a9edd59e3ad427a54df.wasm.unityweb",
-        symbolsUrl: buildUrl + "/8b3b015e8c66ad68efbcda59cc2d35cb.symbols.json.unityweb",
+        dataUrl: buildUrl + "/d0ee1d8b66332ff8399fa9ec72f9c4c3.data.unityweb",
+        frameworkUrl: buildUrl + "/805ac53b358e7f926f0d46074952fdf9.framework.js.unityweb",
+        codeUrl: buildUrl + "/bff1f69d2a01365a756c9d47ded5856f.wasm.unityweb",
+        symbolsUrl: buildUrl + "/c8c286ee07af0e8733b50d7ddd5965c4.symbols.json.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ianiterate",
         productName: "ant-game",
@@ -234,7 +272,7 @@
         devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       };
       var script = document.createElement("script");
-      script.src = buildUrl + "/dc6fd1950ac2d677e8a602e0a4c83930.loader.js";
+      script.src = buildUrl + "/3d0038132c41a6caf994e37e833eb3de.loader.js";
       script.onload = function () {
         createUnityInstance(canvas, config, onProgress).then(function (unityInstance) {
           if (errorShown) return;

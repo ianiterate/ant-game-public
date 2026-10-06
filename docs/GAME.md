@@ -304,8 +304,16 @@ the mix levels and which events get a cue; cheap to change in the Audio Bank ass
 
 Keyboard + mouse: WASD move, mouse look, E interact, F mark trail, Q tap an ant, Shift
 sprint, Esc pause (a second Esc opens credits and sound). Gamepad: left stick move, right
-stick look, A interact, X mark, Y tap, left trigger sprint, Start pause. Desktop
-browsers only for now (**Assumed** — mobile needs a texture and UI pass).
+stick look, A interact, X mark, Y tap, left trigger sprint, Start pause. Touch (phones and
+tablets, landscape only): a joystick under the left thumb moves, dragging on the right half of
+the screen looks, round buttons for Mark, Tap, Interact and Run sit in the bottom-right corner,
+and Menu in the top-right corner opens credits and sound.
+
+**Assumed** — touch is landscape only; held upright, the page asks you to turn the device
+sideways and the game runs on underneath. Cost to change: a portrait HUD and button layout,
+which the phone-sized HUD does not have room for today. **Assumed** — Run is a latch on touch:
+tap it to run, tap again to walk, and it switches itself off shortly after you let go of the
+joystick. Cheap to change.
 
 ---
 
@@ -333,8 +341,8 @@ Nothing at the moment. Run `/open-questions` to confirm.
 Listed inline above or in [SIM.md](SIM.md): the game starts at dawn; 1 u = 1 cm; 10 Hz tick, 2D on the ground plane, sim pauses when the
 tab is hidden; float determinism on one target; NPC ants are counts; trail-graph pheromones
 rather than a diffusion grid; player counts as one ant; six-minute day, ten-day season;
-Input System, Cinemachine 3, UI Toolkit; WebGL2 with gzip + decompression fallback; desktop
-browsers only; versioned JSON saves; commercial-safe asset licences only. From
+Input System, Cinemachine 3, UI Toolkit; WebGL2 with gzip + decompression fallback; touch is
+landscape only, with a latching Run button; versioned JSON saves; commercial-safe asset licences only. From
 [SIM_M2.md](SIM_M2.md): nursing need and taps that take nurses; queen laying, brood and
 starvation rates; chamber kinds, costs and slots; tier chamber requirements; find spawning and
 lifetimes; pinecones as shelter; winter costs more; outcome = workers alive as spring begins;
