@@ -677,8 +677,8 @@ At the end of step 8, if `!Dead && Population == 0 && Brood == 0`: `Dead = true`
 only starve at zero food, and the player alone cannot haul.
 
 **Assumed** — a colony is dead when it has no workers and no brood. The queen does not die in M2,
-so whether her death ends the colony is still **Undecided** in GAME.md (M3). What the Game layer
-shows on death is part of that same Undecided.
+and M3 assumes she never does (SIM_M3.md §8, where the player ant's death is assumed too). What
+her death would mean is left until the user decides it.
 
 ### 6.4 Sandbox
 

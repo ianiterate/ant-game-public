@@ -47,7 +47,7 @@ question (see Undecided).
 ## The colony
 
 The colony is counts, not characters: idle workers, nurses, diggers, brood, food. Workers
-leave the nest only on a job (hauling, later defending) and return to the idle pool
+leave the nest only on a job (hauling or defending) and return to the idle pool
 afterwards. Every worker and every brood eats each day. The queen lays while the stores are
 healthy, up to what the brood chambers hold, and brood becomes workers after seven days.
 Income is capped by what the garden offers, so population converges to what the stores can
@@ -112,8 +112,8 @@ with pinecones. The outcome is the number of workers alive as the new spring beg
 with the stores, the peak and the year's totals. If every worker and every brood is lost
 first, the outcome is the colony's death and the day it came, and the screen offers a new
 colony in the same garden; the old save is replaced. **Assumed** — starting over after the
-colony dies is always offered. It does not pre-empt the open question about the player ant's
-or the queen's death. Cheap to change. **Assumed** — these season
+colony dies is always offered. It is separate from the player ant's own death (see Time,
+weather, threats). Cheap to change. **Assumed** — these season
 effects and the headline measure. Cheap to change.
 
 ## Finds
@@ -140,27 +140,69 @@ change, though scouts would need the economy retuned so that they do not replace
 
 A trail is a path with one strength. It decays on its own and is reinforced by every ant
 that walks it, so an active haul keeps its own trail alive and a finished one fades. Rain
-washes trails out quickly. One player-laid trail at a time: pressing Mark again while
+washes trails out quickly. Walking a marked find's trail home again, while workers are still
+being called to it, renews it at full strength. One player-laid trail at a time: pressing Mark again while
 walking home abandons the one being laid, and completing a new one replaces the old. The
 point is that the player's movement *is* the order, not a cursor.
 
-## Time, weather, threats (later milestones)
+## Time, weather, threats
 
-A day is **Assumed** six real minutes, a season ten days. Night slows foraging and brings
-predators. Weather is clear / overcast / rain; rain reverses outbound ants and washes
-trails. Threats: spiders on patrol, a bird taking ants off a trail segment, raids from a
-rival colony. Each is arithmetic against the colony's counts, not a boss fight. Winter is
-already part of the year (see The session).
+A day is **Assumed** six real minutes, a season ten days. Night slows everyone outside the nest.
+No threat comes on the first day.
+
+**Weather** is clear, overcast or rain, and changes only on the quarter day. Rain never follows
+clear directly: overcast comes first, and the HUD shows rain one quarter day before it starts.
+Overcast and rain bring slightly fewer finds. Rain calls home every worker on the way out or
+waiting at a find, stops trails calling new workers, and washes trails down to almost nothing in
+seconds. Parties already carrying keep going. When it stops, walk your trail again to renew it.
+Spring and autumn are wettest, summer driest.
+
+**Spiders** arrive at night and stay two days. Each settles on the busiest trail and walks a small
+loop across it; when that trail goes quiet it moves to whichever trail the colony is using next. A
+worker within reach is taken now and then, about one for every ten seconds workers spend near it,
+and each loss weakens the trail. Mark a spider the way you mark a find and walk home: workers
+gather just short of it, and six of them drive it off without loss. Fewer still win but lose some;
+two are lost. If rain washes the defenders' trail, mark the spider again to renew it. Spiders hide
+in rain.
+
+**Birds** hunt by day, never in rain. A shadow follows one worker on the trails for five seconds,
+then takes up to three workers near it and scatters the trail. Stand near the shadow and press
+Interact to raise the alarm: the workers scatter and none are taken, though the strike still lands: it scatters the trail, and it kills you if you are standing under it.
+
+**Raids** come from a rival colony you never see. It grows through the year and sends raiders, more
+of them the bigger your colony's tier, across the garden from its edge. When raiders are spotted,
+every worker on the way out turns home. The fight is at the nest, against every worker inside: a
+fuller nest beats a raid cheaply, and the defenders fight harder while you are there with them.
+Raiders loot the stores while they fight, and for a while longer if they break through. Every
+raider killed weakens the rival. No raids in rain or winter.
+
+Each threat is arithmetic against the colony's counts, not a boss fight. The queen and the brood
+are never targets. A reasonable player loses about one worker in eight that they raise to threats
+and still ends the year alive; ignoring rain or the defence costs far more. The rules and numbers
+are in [SIM_M3.md](SIM_M3.md).
+
+**Assumed** — the player ant dies to threats and comes back: within a spider's reach or a raid's
+path for about three seconds, or under a bird's strike, you are lost, and ten seconds later you
+leave the nest as a fresh worker, the colony one worker smaller. Nothing else is lost, and the queen
+cannot die. Cost to change: making the player's death end the game means a new
+outcome, a save that ends at death and a retune of every threat (about a day plus a balance pass);
+letting the queen die means new colony-death rules and redoing the raid arithmetic (a few days).
+
+**Assumed** — the weather and threat numbers, that spiders follow the colony's traffic, that a spider
+is defended by marking it (not by a tap near it or an order from the nest) and a full party loses
+nobody, that the alarm uses Interact, and that the nest's defence
+against a raid is automatic. Cheap to change; none of it decides what a tap away from the nest does.
 
 ## Simulation
 
 The full M1 rules — items, colony upkeep, trails, recruitment, hauling, tick order and
 tests — are specified in [SIM.md](SIM.md). Colony building — chambers, queen and brood, tier,
-finds that come and go, the year and its outcome, saves — is in [SIM_M2.md](SIM_M2.md).
+finds that come and go, the year and its outcome, saves — is in [SIM_M2.md](SIM_M2.md). Weather,
+spiders, birds, raids and the player ant's death are in [SIM_M3.md](SIM_M3.md).
 Everything the player reads is in [UI_COPY.md](UI_COPY.md).
 
-The simulation is headless: a fixed 10 Hz tick, one seeded random source, systems run in
-a fixed order, no scene or renderer involved. The view reads the simulation; the simulation
+The simulation is headless: a fixed 10 Hz tick, one seed (driving one random stream for the
+colony and finds and a second for weather and threats), systems run in a fixed order, no scene or renderer involved. The view reads the simulation; the simulation
 does not know the view exists. **Assumed** — reproducible on a single build target only
 (no fixed-point maths); cross-platform replays or lockstep multiplayer would be a rewrite.
 
@@ -182,9 +224,6 @@ browsers only for now (**Assumed** — mobile needs a texture and UI pass).
 ---
 
 ## Undecided
-
-**Undecided** — death: when the player ant dies, respawn as a fresh worker, or game over;
-and whether the queen's death ends the colony. Affects tone, saves and threat tuning (M3).
 
 **Undecided** — what tapping an ant away from the nest does (redirect it, recruit it, or
 nothing). Blocks multi-trail play, which M2 does not include.
@@ -211,4 +250,7 @@ browsers only; versioned JSON saves; commercial-safe asset licences only. From
 [SIM_M2.md](SIM_M2.md): nursing need and taps that take nurses; queen laying, brood and
 starvation rates; chamber kinds, costs and slots; tier chamber requirements; find spawning and
 lifetimes; pinecones as shelter; winter costs more; outcome = workers alive as spring begins;
-no scout ants; the panel orders digging only.
+no scout ants; the panel orders digging only. From [SIM_M3.md](SIM_M3.md): the player ant
+respawns and the queen cannot die; the weather and threat numbers; spiders defended by marking;
+the alarm on Interact; automatic nest defence; re-walking a trail renews it; a separate random
+stream for weather and threats; colonies saved before M3 continue with fresh weather and threats.

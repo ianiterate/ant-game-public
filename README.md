@@ -12,7 +12,7 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-06 (2dd219b)
+- **Build:** 2026-10-06 (3966f9c)
 
 ## What you can do right now
 
@@ -22,14 +22,21 @@ pheromone trail, idle workers follow it out, and when enough of them are there t
 carries the find back. Standing at the nest, **Tap** sends a few workers down your trail,
 and **Interact** opens the nest: a cutaway where you dig brood, store and processing
 chambers with the food you bring in. The queen lays while there is food, brood becomes
-workers in a week, and the colony's tier rises with its size and chambers. Autumn slows the
-queen and winter brings nothing new and costs more, unless you have thatched the nest with
-pinecones. The year ends when spring returns; the game saves itself in your browser each
-day. Click once in the page to lock the mouse; Esc releases it.
+workers in a week, and the colony's tier rises with its size and chambers.
+
+The garden fights back. Rain turns outbound workers home and washes trails out; walk a
+trail again to renew it. Spiders settle on busy trails and take workers: **Mark** the
+spider and walk home to call a party of defenders. A bird's shadow follows a worker for a
+few seconds before it strikes; **Interact** near it to raise the alarm. A rival colony
+raids the nest and loots the stores; be home when they come. If you are taken, you return
+as a fresh worker after a few seconds. Autumn slows the queen and winter brings nothing new
+and costs more, unless you have thatched the nest with pinecones. The year ends when spring
+returns; the game saves itself in your browser each day. Click once in the page to lock the
+mouse; Esc releases it.
 
 ## Controls
 
-| | Move | Look | Mark trail | Tap (at nest) | Nest / confirm | Sprint | Pause / release mouse |
+| | Move | Look | Mark trail / call defenders | Tap (at nest) | Nest / alarm / confirm | Sprint | Pause / release mouse |
 |---|---|---|---|---|---|---|---|
 | Keyboard + mouse | W A S D | mouse | F | Q | E | Shift | Esc |
 | Gamepad | left stick | right stick | X | Y | A | left trigger | Start |

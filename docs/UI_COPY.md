@@ -1,7 +1,9 @@
 # UI copy
 
 Every string the player reads. The sections from *Names* to *First-run hints* are the M1
-vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, the year and saves. Code references the **key**; the
+vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, the year and saves, and
+[M3 — weather and threats](#m3--weather-and-threats) adds weather, spiders, birds, raids and the
+player ant's death. Code references the **key**; the
 text here is the source for the string table. The rules behind each line are in
 [GAME.md](GAME.md) and [SIM.md](SIM.md). This file only puts them into words.
 
@@ -43,8 +45,8 @@ has none, rename it. Cost to change: one string.
 
 **Assumed** — the HUD and text call the player "you", not a worker number. NPC ants have no
 identity (GAME.md), and a number would hint at one. Cost to change: cheap in M1, one string.
-If death becomes "respawn as a fresh worker" (**Undecided** in GAME.md), a worker number is
-the natural way to show a new body. That means adding a number field and a format string.
+Death is now "respawn as a fresh worker" (assumed in GAME.md; SIM_M3.md §8), and a worker
+number would be the natural way to show the new body. That means adding a number field and a format string.
 
 **Assumed** — the tier names are Young, Established and Mature. Cost to change: three strings.
 If tier comes to depend on chambers (M2), the names still read correctly.
@@ -109,7 +111,7 @@ night uses the simulation's `IsNight` edges, and the daylight words are split by
 `FoodRanOut`, `TierChanged` and `SeasonChanged` change meaning in M2, so their strings live in the
 M2 section.
 
-**Silent** events get sound and visuals, but no text. `DayStarted` fires at midnight, in the dark: the HUD day updates and `toast.dawn` greets the day. `AntLeftNest` and `AntReturned` fire six at a time, so a toast would be spam. `TaskCreated` and `TaskComplete` share a tick with `TrailLaid` and `ItemDelivered`. `TrailFaded`: the line fades on screen. `ItemSpoiled` is followed by `toast.task.item_gone` if the find was marked. `AntsLost`, `WeatherChanged` and `ThreatSpawned` are not raised in M1 and have no copy.
+**Silent** events get sound and visuals, but no text. `DayStarted` fires at midnight, in the dark: the HUD day updates and `toast.dawn` greets the day. `AntLeftNest` and `AntReturned` fire six at a time, so a toast would be spam. `TaskCreated` and `TaskComplete` share a tick with `TrailLaid` and `ItemDelivered`. `TrailFaded`: the line fades on screen. `ItemSpoiled` is followed by `toast.task.item_gone` if the find was marked. `AntsLost`, `WeatherChanged` and `ThreatSpawned` are first raised in M3; their strings are in the [M3 section](#toasts--events-2).
 
 ## Toasts — command rejected
 
@@ -404,7 +406,7 @@ The headline is a big number under its label. The lines below it are the support
 breaks, not on a date. Cost to change: one string.
 
 The death card offers a new colony because GAME.md assumes starting over is always offered; that
-does not settle the **Undecided** on the player ant's or the queen's death.
+is separate from the player ant's own death, which GAME.md assumes ends in a respawn (SIM_M3.md §8).
 
 **Assumed** — a colony that dies in the sandbox, after the year's outcome is recorded, opens the
 death card as well as raising `toast.colony.died`, so starting over is offered the same way
@@ -430,3 +432,203 @@ begins. SIM_M2.md §10.4 says what happens on `TooOld` and `TooNew` only. Cost t
 string and the Game layer's branch.
 
 "Version" is used rather than "build", because players do not know the word "build".
+
+---
+
+## M3 — weather and threats
+
+The strings for weather, spiders, birds, raids and the player ant's death. The rules are in
+[GAME.md](GAME.md) ("Time, weather, threats") and [SIM_M3.md](SIM_M3.md). Voice, format and the
+M2 parameter widths hold. New parameters, counted at their widest: `{s}` is whole seconds (3
+digits); `{lost}`, `{def}`, `{won}`, `{raids}` and `{spiders}` are counts (3 digits). `{d}` keeps
+its M2 meaning, days to one decimal place, so the defenders count that SIM_M3.md §14.4 calls
+`{d}` is `{def}` here.
+
+Every threat is generic: a spider, a bird, raiders from a rival colony. No species, and nothing
+about how they hunt beyond what the simulation does.
+
+### Threat words
+
+The same few words carry every threat string, so the player learns one vocabulary for all of
+them. A new threat string uses these words or adds a row here.
+
+| word | means | never |
+|---|---|---|
+| taken | A worker killed by a spider or a bird | eaten, killed, died |
+| lost | Workers killed in a fight at the nest; and the player ant ("You are lost") | killed, dead |
+| driven off | A spider beaten by its defenders (GAME.md's phrase) | killed, defeated |
+| fought off | A raid beaten at the nest | repulsed, won |
+| defenders | Workers called to a spider, and every worker fighting at the nest | soldiers, guards |
+| the shadow | The bird before it strikes. "The bird" once it has | hawk, any species |
+| raiders | The rival colony's workers on a raid | enemies, invaders |
+| heading out / turn home | Workers recalled by rain or a raid (M1's "turn home") | retreat, flee |
+| washes out / walk it again | What rain does to a trail, and how the player renews it | fades (that is dry decay) |
+
+**Assumed** — the rival is "the rival colony" and its workers "raiders". It has no name, because
+the player never sees it. Cost to change: `threat.rival`, `threat.raiders` and the nine raid
+strings below.
+
+**Assumed** — the player ant is "lost", and workers are "taken". A worker taken by a spider and
+the player lost to one are the same event to the simulation; the different word keeps "you"
+distinct from the workers, as M1 did. Cost to change: the six player-death and respawn strings.
+
+**Assumed** — the bird is "the shadow" until it strikes, because the shadow is all the view
+draws (SIM_M3.md §14.2). Cost to change: five strings. If a bird model is ever drawn, "the shadow"
+still reads correctly.
+
+### Names
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `threat.spider` | Spider | World label over a spider the probe targets | 20 |
+| `threat.bird` | Bird | Wherever the bird is named in a list (pause screen, outcome). Not in the world: the shadow has no label | 20 |
+| `threat.raiders` | Raiders | Label of the HUD raid row while `Raid.Active` | 20 |
+| `threat.rival` | The rival colony | Wherever the rival is named. M3 names it nowhere else | 24 |
+
+### HUD additions
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `hud.weather.clear` | Clear | Beside the weather icon: `WeatherNow.Current == Clear` | 12 |
+| `hud.weather.overcast` | Overcast | `Current == Overcast` | 12 |
+| `hud.weather.rain` | Rain | `Current == Rain` | 12 |
+| `hud.weather.rain_soon` | Rain soon | Forecast line under the weather: `Next == Rain` and `Current != Rain` | 16 |
+| `hud.weather.dry_soon` | Rain ends soon | Forecast line: `Current == Rain` and `Next != Rain` | 16 |
+| `hud.raid.marching` | Raiders: {n}. Time to the nest: {s} s | `Raid.Phase == Marching`: `Raiders`, `ceil(RaidSecondsToContact)` | 40 |
+| `hud.raid.fighting` | Raiders: {n}. Defenders: {def} | `Phase == Fighting`: `Raiders`, `InNest` | 40 |
+| `hud.raid.looting` | Raiders looting the stores: {n} | `Phase == Looting`: `Raiders` | 40 |
+| `hud.defend` | At the spider: {here}/{need} | While a Defend task is `Recruiting` and the player is at its muster point or at the nest. `here = AtTarget` plus 1 if the player is within reach of `DefendMuster`; `need = SpiderDefenders`. Shown under `hud.party` if both apply | 26 |
+
+**Assumed** — a "Rain ends soon" forecast as well as "Rain soon". The sim decides the next
+interval's weather in advance either way (§1.1), and the end of rain is when the player should
+go and walk a trail again. Cost to change: one string, no sim change.
+
+The forecast lines carry no countdown. `SecondsToWeatherSample` would give one, but "soon" is a
+quarter day at most, and a number would invite waiting by the clock instead of by the sky.
+
+### Spider (world label)
+
+The label shows `threat.spider`, then one status line, then the prompt.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `spider.days_left` | Days until it leaves: {d} | Status line, unless hiding: `SpiderSecondsLeft / DayLengthSeconds`, one decimal place, at least 0.1 | 30 |
+| `spider.hiding` | Hiding from the rain | Status line while `SpiderHiding(slot)` | 30 |
+
+### Interaction prompts
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `prompt.spider.mark` | [Mark] Call defenders, then walk home | Probe on a spider within `SpiderReach + ThreatMarkMargin`, no draft, no Defend task on it, not `Fighting` | 40 |
+| `prompt.spider.defended` | Defenders called. Keep clear of it. | Probe on a spider whose Defend task is `Recruiting` | 40 |
+| `prompt.spider.fighting` | Defenders are fighting it. Keep clear. | Probe on a spider in `Fighting` | 40 |
+| `prompt.trail.laying.defend` | Home to call defenders. [Mark] to abandon | Replaces `prompt.trail.laying` while the draft is for a spider (`Draft.Spider` set) | 40 |
+| `prompt.trail.laying.defend.gone` | The spider has gone. [Mark] to abandon | Same, once the draft's spider no longer resolves or is `Gone`. Completing the walk would only raise `toast.trail.threat_gone` | 40 |
+| `prompt.bird.alarm` | [Interact] Raise the alarm | `Bird.Active`, not `Alarmed`, the player within `AlarmReach` of the shadow and outside `BirdStrikeRadius` | 40 |
+| `prompt.bird.alarm.under` | [Interact] Raise the alarm. Get clear. | Same, but the player is within `BirdStrikeRadius`: the strike would take you | 40 |
+| `prompt.bird.raised.under` | Alarm raised. Get out from under it. | `Alarmed`, the player within `BirdStrikeRadius`. The alarm saves workers, not you | 40 |
+| `prompt.find.refresh` | [Mark] Walk the trail again | Second prompt line under `prompt.find.claimed` while `CanRefresh(item)` and not raining | 40 |
+| `prompt.find.refresh.rain` | [Mark] Walk it again. Rain washes it. | Same, while raining. Marking is accepted; the renewed trail washes back down in seconds | 40 |
+| `prompt.find.mark.rain` | [Mark] Mark it. Nobody comes in rain | Replaces `prompt.find.mark` while raining. Marking is accepted; recruiting waits for dry weather | 40 |
+| `prompt.nest.tap.defend` | [Tap] Send {n} to the spider | Replaces `prompt.nest.tap` when a tap would serve a Defend task (`TapAnt(−1)` prefers one, §5.2) | 40 |
+| `prompt.nest.recalled.rain` | Raining. Nobody goes out until it stops. | At the nest while raining, in place of `prompt.nest.tap`, `prompt.nest.tap.defend` and `prompt.nest.wait` | 40 |
+| `prompt.nest.recalled.raid` | A raid is on. Everyone stays in. | At the nest while `Raid.Phase` is `Marching` or `Looting`. Takes precedence over the rain line | 40 |
+| `prompt.nest.rally` | Defenders fight harder while you stay. | At the nest while `Raid.Phase == Fighting` and `PlayerAtNest` | 40 |
+
+`prompt.nest.tap.nurses` (M2) serves a defence as well as a haul: it names the nurses, not the
+target.
+
+**Assumed** — the find and nest prompts change in rain, though nothing is rejected but the tap.
+Marking a find or re-walking a trail in rain is legal and nearly useless, and the prompt is the
+only place the player learns that before trying. Cost to change: Game layer only, three strings.
+
+### Respawn screen
+
+Two lines, centred over the faded view while `!PlayerAlive`. The cause is in the toast that
+opens it.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `respawn.line` | A worker from the nest will take your place. | First line, always while down | 50 |
+| `hud.respawn` | Out of the nest in: {s} s | Second line: `ceil(RespawnSecondsLeft)` while it is above 0 | 30 |
+| `hud.respawn.waiting` | No worker in the nest to take your place. Waiting. | Second line in place of `hud.respawn` while `WaitingForWorker` | 50 |
+
+A dead colony never returns the player (§8.3): the death card replaces this screen.
+
+### Toasts — events
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `toast.weather.overcast` | Overcast. Fewer finds, and rain may follow. | `WeatherChanged`, A = Overcast, B = Clear. Not when `toast.weather.rain_soon` shows on the same tick | 60 |
+| `toast.weather.clear` | The sky clears. | `WeatherChanged`, A = Clear, B = Overcast | 60 |
+| `toast.weather.rain_soon` | Rain soon. Workers will turn home and trails wash out. | `WeatherForecast`, A = Rain. Wins over `toast.weather.overcast` raised on the same tick | 60 |
+| `toast.weather.rain` | Rain. Workers heading out turn home. Trails wash out. | `WeatherChanged`, A = Rain | 60 |
+| `toast.weather.dry` | The rain has stopped. Walk your trail again to renew it. | `WeatherChanged`, B = Rain, while the player has a `Recruiting` haul | 60 |
+| `toast.weather.dry.plain` | The rain has stopped. Workers can go out again. | Same, with no `Recruiting` haul | 60 |
+| `toast.trail.washed` | Your trail has washed out. Walk it again after the rain. | `TrailWashed`: rain drove the player's haul trail or a defend trail down to the floor, once per rain | 60 |
+| `toast.trail.refreshed` | Trail renewed. Workers follow it out again. | `TrailRefreshed`. In rain, `toast.trail.washed` follows within seconds, which is the point | 60 |
+| `toast.spider.arrived` | A spider has settled across a busy trail. | `ThreatSpawned`, A = Spider | 60 |
+| `toast.spider.moved` | The spider has moved to a busier trail. | `SpiderMoved` | 60 |
+| `toast.spider.left` | The spider has left the garden. | `SpiderLeft` | 60 |
+| `toast.defend.marked` | Spider marked. Walk the trail back to the nest. | `TrailMarkStarted` with A < 0, in place of `toast.trail.started` | 60 |
+| `toast.defend.laid` | Defenders called. They gather just short of the spider. | `TaskCreated` with B < 0, in place of `toast.trail.laid` on the same tick | 60 |
+| `toast.defend.started` | The defenders close in on the spider. | `DefendStarted` | 60 |
+| `toast.spider.driven_off` | The spider is driven off. The defenders head home. | `SpiderDrivenOff` | 60 |
+| `toast.defend.failed` | The defenders were all taken. The spider stays. | `DefendFailed`, and `TaskAborted` with `DefendersLost`, which comes with it: shown once | 60 |
+| `toast.ants_lost.spider` | Workers taken by a spider: {n} | `AntsLost`, B = Spider. Sum A over 10 s and show once, as M2's starvation toast does | 60 |
+| `toast.bird.shadow` | A shadow on the trail. [Interact] near it to raise the alarm. | `ThreatSpawned`, A = Bird. The strike follows in 5 s | 60 |
+| `toast.bird.alarm` | Alarm raised. The workers scatter. | `AlarmRaised` | 60 |
+| `toast.ants_lost.bird` | Workers taken by the bird: {n}. The trail is scattered. | `AntsLost`, B = Bird. `BirdStrike` on the same tick is then silent | 60 |
+| `toast.bird.missed` | The alarm saved them. The trail is scattered all the same. | `BirdStrike`, B = 1 | 60 |
+| `toast.bird.empty` | The bird took nobody. The trail is scattered. | `BirdStrike`, A = 0, B = 0 (no worker in the strike) | 60 |
+| `toast.raid.spotted` | Raiders spotted: {n}. Workers heading out turn home. | `ThreatSpawned`, A = Raid; `n` = B | 60 |
+| `toast.raid.contact` | Raiders at the nest. Defenders fight harder with you there. | `RaidContact`, B > 0 | 60 |
+| `toast.raid.contact.empty` | Raiders at the nest, and nobody home to fight them. | `RaidContact`, B = 0: the stores are looted at once | 60 |
+| `toast.raid.broke_in` | The defence broke. Raiders are looting the stores. | `RaidBreached`, raised at the break-in. Not after `toast.raid.contact.empty` (an empty nest is looted at once) | 60 |
+| `toast.raid.repulsed` | Raid fought off. Workers lost: {lost}. Food looted: {food} | `RaidRepulsed`: A, B | 60 |
+| `toast.raid.breached` | The raiders have gone. Workers lost: {lost}. Food looted: {food} | Not shown: `toast.raid.looting_ended` replaced it at the end of the looting | 60 |
+| `toast.raid.looting_ended` | The raiders leave with {food} food. {lost} workers lost. | `RaidLootingEnded`: A = lost, B = food. Raised when the looting ends, 30 s after the break-in | 60 |
+| `toast.food.empty.raid` | The raiders have emptied the stores. | `FoodRanOut` while `Raid.Active`, in place of `toast.food.empty` | 60 |
+| `toast.player.died.spider` | Too close to the spider. You are lost. | `PlayerDied`, A = Spider. Opens the respawn screen | 60 |
+| `toast.player.died.bird` | Under the shadow when it struck. You are lost. | `PlayerDied`, A = Bird | 60 |
+| `toast.player.died.raid` | Too close to the raiders. You are lost. | `PlayerDied`, A = Raid | 60 |
+| `toast.player.respawned` | You are out again. The colony is one worker smaller. | `PlayerRespawned` | 60 |
+| `toast.task.party_lost` | The party was taken. The find lies where it fell. | `TaskAborted`, `PartyLost`. The find can be marked again | 60 |
+| `toast.task.threat_gone` | The spider has gone. The defenders come home. | `TaskAborted`, `ThreatGone` | 60 |
+| `toast.trail.player_died` | The trail you were laying is lost with you. | `TrailAbandoned`, `PlayerDied`, after the `toast.player.died.*` of the same tick | 60 |
+| `toast.trail.threat_gone` | The spider has gone. No need for defenders. | `TrailAbandoned`, `ThreatGone` | 60 |
+
+**Silent** in M3: `AntsLost` with B = Raid (one a tick through a fight; the HUD counts and the
+end-of-raid toast carry it). `BirdStrike` with A > 0, which follows `toast.ants_lost.bird`.
+`WeatherForecast` for anything but rain (the HUD forecast line shows it). `WeatherChanged` from
+Rain (the `toast.weather.dry` pair covers it).
+
+**Assumed** — the bird warning names `[Interact]` in the toast itself. Five seconds is too short
+to find a hint, and Interact does nothing else outside the nest. Cost to change: one string.
+
+### Toasts — command rejected
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `reject.recalled.rain` | Not in the rain. Workers stay in until it stops. | `Recalled` while raining and no raid is active | 60 |
+| `reject.recalled.raid` | Not during a raid. Workers stay in to fight. | `Recalled` while `Raid.Active` (wins over rain) | 60 |
+| `reject.no_such_threat` | The spider has gone. | `NoSuchThreat` | 60 |
+| `reject.defend_active` | Defenders are already called to this spider. | `DefendActive` | 60 |
+| `reject.no_alarm_target` | Too far from the shadow, or it has passed. | `NoAlarmTarget` | 60 |
+
+`PlayerDown` is silent: the respawn screen already says why nothing works. `OutOfReach` on a
+spider and `DraftActive` reuse `reject.out_of_reach` and `reject.draft_active`, which read
+correctly for a spider.
+
+### The year's outcome — threat lines
+
+Added under `outcome.line.totals` on both cards.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `outcome.line.threats` | Lost to threats: {n}. Food looted: {food} | `Stats.WorkersKilled`, `floor(Stats.FoodLooted)` | 48 |
+| `outcome.line.defence` | Raids fought off: {won}/{raids}. Spiders driven off: {spiders} | `RaidsRepulsed`, `RaidsRepulsed + RaidsBreached`, `SpidersDrivenOff` | 52 |
+| `outcome.line.you` | Times you were lost: {n} | `Stats.PlayerDeaths` | 40 |
+
+`outcome.line.defence` is the one 52-character line. The outcome card allows it; the rest stay
+at 48.
