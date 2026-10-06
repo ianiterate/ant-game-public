@@ -607,6 +607,43 @@ colony's traffic.
 **Assumed** — a full party wins unhurt. Cheap to change (`SpiderFightKillSeconds`); below 8.4 s a
 full party loses one again.
 
+### 5.6 Field tap
+
+Settled 2026-10-06 (GAME.md, "Settled"). `TapAnt(−1)` with the player **outside** `NestRadius`:
+
+1. `RecallActive` → reject `Recalled`.
+2. Target = the lowest-index `Defend` task in `Recruiting`, else the player's haul (the `−1` task
+   of SIM.md §6.2) if it is `Recruiting`; its trail must resolve. None → reject `NothingToSend`.
+3. `Recount`. Then, in ant slot order, take the first `TapBatch` ants that are active, in `Outbound`
+   or `AtTarget`, carry nothing, are on a task that resolves and is not the target, and whose
+   drawn position (`AntPosition`, alpha 1) is within `FieldTapRadius` (6 u) of `PlayerPos`.
+   Never `Hauling`, `Fighting`, `Depositing` or `GoingHome`.
+4. Each one: old task `Assigned−−` (and `AtTarget−−` if it was there); `Task` = target,
+   `Trail` = target's trail, `S = PrevS` = the distance along that trail of the point closest to
+   its position (projected onto the polyline; on a tie, the segment nearer the nest);
+   `Phase = Outbound`; target `Assigned++`. `Lane` and `WobblePhase` are kept.
+5. None taken → reject `NothingToSend`. Else raise `AntRedirected(A = count, B = target task
+   index, P = PlayerPos)` (`EventKind` appended after `TrailWashed`).
+
+`TapAnt` with an explicit task index outside `NestRadius` is still `NotAtNest`. At the nest nothing
+changes. No new state: ants and tasks are already in `StateHash` and the save, so the save
+version stays 2. `SimConfig` gains `FieldTapRadius = 6f`. `World.TapPreview(task, playerPos, out
+fromNursing)` reports what a field tap would take (never nurses) when the player is away from
+the nest, for the HUD's `prompt.field.tap`.
+
+The old task loses the workers and, if it is recruiting, recruits replacements from the nest at
+its trail's rate: the cost GAME.md names. A redirected ant appears on the new trail at once; it can
+be up to `FieldTapRadius` plus the trail's offset from the player away from where it stood. The
+view does not smooth that jump.
+
+**Assumed** — a field tap is refused in rain or a raid (`Recalled`), as a nest tap is: the recall
+would turn the redirected ants home on the same tick. Cheap to change (one check).
+
+**Assumed** — a field tap does not count toward `MaxTapsPerTask` and is not capped by the target's
+party size: it moves workers, it does not spawn them, and the supply nearby is the limit. An
+over-full haul party carries no faster; the extra ants ride along. Cheap to change (a `Min` with
+`PartySize − Assigned`, or `Taps++`).
+
 ---
 
 ## 6. Birds
@@ -876,7 +913,7 @@ not across platforms.
 | `MarkTrailStart` | accepts the player's recruiting `Claimed` find as a re-walk (§1.4) |
 | `MarkThreat` | new (§5.1) |
 | `Alarm` | new (§6.3) |
-| `TapAnt` | `Recalled` while `RecallActive` (checked after `NotAtNest`); `−1` prefers a recruiting defence (§5.2) |
+| `TapAnt` | `Recalled` while `RecallActive` (checked after `NotAtNest`); `−1` prefers a recruiting defence (§5.2); `−1` away from the nest is a field tap (§5.6) |
 | `StartBuild`, `CancelBuild` | unchanged (digging is not recalled) |
 
 `TrailDraft` gains `bool Refresh` and `SpiderId Spider`. `ItemSystem`'s expiry exemption for the
@@ -917,6 +954,7 @@ New kinds, **appended after `YearEnded`**:
 | `TrailWashed` | trail index | | | 4 |
 | `PlayerDied` | `ThreatKind` cause | | player pos | 10 |
 | `PlayerRespawned` | | | nest | 10 |
+| `AntRedirected` | workers turned | target task index | player pos | 3 |
 
 A raid fight raises at most one `AntsLost` a tick. The 256-event cap is not at risk.
 

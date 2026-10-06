@@ -27,7 +27,8 @@ simplified shapes, built for URP on WebGL.
    pheromone from nest to find.
 4. **Ants come.** Idle workers follow the trail at a rate set by its strength, until the
    party is big enough. You can also stand at the nest and *tap* to send a few directly.
-   Tapping an ant out in the field is a later question (see Undecided).
+   Out in the field, tapping redirects: a few nearby workers leave what they were doing and
+   join your current trail.
 5. **Haul.** Once enough ants are at the find, the party carries it home. Food goes into
    the colony's stores; the colony grows.
 
@@ -41,8 +42,8 @@ readability). The first patch is 200 × 200 units — a 2 m square of garden. Ex
 change once assets exist: every mesh re-export and every speed retuned.
 
 Walking is on the **ground and gentle slopes** — leaves and stones lying on the ground are
-walkable; vertical surfaces are not. Climbing stems, walls and leaf undersides is a later
-question (see Undecided).
+walkable; vertical surfaces are not, and they stay that way: the garden is read from the
+ground, and a wall is a wall.
 
 ## The colony
 
@@ -181,12 +182,10 @@ are never targets. A reasonable player loses about one worker in eight that they
 and still ends the year alive; ignoring rain or the defence costs far more. The rules and numbers
 are in [SIM_M3.md](SIM_M3.md).
 
-**Assumed** — the player ant dies to threats and comes back: within a spider's reach or a raid's
-path for about three seconds, or under a bird's strike, you are lost, and ten seconds later you
-leave the nest as a fresh worker, the colony one worker smaller. Nothing else is lost, and the queen
-cannot die. Cost to change: making the player's death end the game means a new
-outcome, a save that ends at death and a retune of every threat (about a day plus a balance pass);
-letting the queen die means new colony-death rules and redoing the raid arithmetic (a few days).
+The player ant dies to threats and comes back: within a spider's reach or a raid's path for
+about three seconds, or under a bird's strike, you are lost, and ten seconds later you leave the
+nest as a fresh worker, the colony one worker smaller. Nothing else is lost, and the queen cannot
+die. The colony is the thing that can be lost; you are one of its ants.
 
 **Assumed** — the weather and threat numbers, that spiders follow the colony's traffic, that a spider
 is defended by marking it (not by a tap near it or an order from the nest) and a full party loses
@@ -233,22 +232,24 @@ browsers only for now (**Assumed** — mobile needs a texture and UI pass).
 
 ---
 
+## Settled
+
+These were open questions; they were decided on 2026-10-06 and are now design.
+
+- **Tapping in the field redirects.** Away from the nest, Tap takes up to three workers within
+  a few body lengths off whatever they were doing and sends them down your current trail. It is
+  the only way to steal from one job for another, and it costs the job they left.
+- **Embodied only.** Recruiting is trails and taps. The nest panel orders digging and nothing
+  else. There is no map, no cursor and no order queue.
+- **A fictional colony.** No real species is named. Behaviours are plausible, not documentary,
+  and threats are "a spider", "a bird", "the rival colony".
+- **No climbing.** Ground and gentle slopes, for good. Stems and walls are scenery.
+- **Licence.** The play repository's design documents are CC BY 4.0. The game build is free to
+  play where it is published and may not be redistributed. The source stays private.
+
 ## Undecided
 
-**Undecided** — what tapping an ant away from the nest does (redirect it, recruit it, or
-nothing). Blocks multi-trail play, which M2 does not include.
-
-**Undecided** — how much strategy-game is in it: embodied-only recruiting (trail and tap),
-or also orders issued from the colony panel. Affects UI from M2.
-
-**Undecided** — species fidelity: a real species (black garden ant, *Lasius niger*) with
-real behaviours and threats named in-game, or a fictional colony. Affects art and all text.
-
-**Undecided** — climbing: full surface walking (stems, walls, leaf undersides) later, or
-never. A one-to-two-week feature that changes the controller, camera and simulation.
-
-**Undecided** — licence of the public play repository (code and docs are visible; which
-terms apply).
+Nothing at the moment. Run `/open-questions` to confirm.
 
 ## Assumed (summary)
 

@@ -476,8 +476,11 @@ ants immediately on the task's trail (`Assigned` counted by scan at that moment)
 **Assumed** — in M1 a tap only works from the nest (`|PlayerPos − NestPos| <= NestRadius`)
 and only sends ants down an existing recruiting task's trail. Cheap to change.
 
-**Undecided** — "tap a nearby ant" outside the nest (GAME.md core loop step 4): what it
-does to an ant already on another job. Blocks nothing in M1; blocks multi-trail play in M2.
+Settled 2026-10-06 — **field tap redirects**: away from the nest, `TapAnt(-1)` takes up to
+`TapBatch` ants within `FieldTapRadius` (6 u) of the player that are Outbound or AtTarget on another
+task (never Hauling, Fighting or carrying) and reassigns them to the player's active recruiting
+task (haul or defend); each leaves its old task's `Assigned` count. Rejected with `NothingToSend`
+if no such ant or no recruiting player task. The exact rule is SIM_M3.md §5.6.
 
 ---
 

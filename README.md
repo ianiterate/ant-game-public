@@ -12,15 +12,15 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-06 (c2bd9be)
+- **Build:** 2026-10-06 (3a4791e)
 
 ## What you can do right now
 
 You have one year. Walk out from the nest mound and find food: sugar cubes, seeds, leaves,
 dead insects. Press **Mark** next to a find and walk home; the path you walk becomes a
 pheromone trail, idle workers follow it out, and when enough of them are there the party
-carries the find back. Standing at the nest, **Tap** sends a few workers down your trail,
-and **Interact** opens the nest: a cutaway where you dig brood, store and processing
+carries the find back. **Tap** at the nest sends a few workers down your trail, or out in the
+field calls nearby workers off their job onto yours; **Interact** opens the nest: a cutaway where you dig brood, store and processing
 chambers with the food you bring in. The queen lays while there is food, brood becomes
 workers in a week, and the colony's tier rises with its size and chambers.
 
@@ -36,10 +36,17 @@ mouse; Esc releases it.
 
 ## Controls
 
-| | Move | Look | Mark trail / call defenders | Tap (at nest) | Nest / alarm / confirm | Sprint | Pause / release mouse |
+| | Move | Look | Mark trail / call defenders | Tap (call workers) | Nest / alarm / confirm | Sprint | Pause / release mouse |
 |---|---|---|---|---|---|---|---|
 | Keyboard + mouse | W A S D | mouse | F | Q | E | Shift | Esc |
 | Gamepad | left stick | right stick | X | Y | A | left trigger | Start |
 
 Browsers only expose gamepads after a first click or key press, so press something once
 and the pad will be picked up.
+
+## Licence
+
+The design documents in  are licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The game build is free to play here and on itch.io and may not be redistributed. Third-party
+sound is CC0 and credited in the game's credits panel and in 's attribution. The
+source code is not published.

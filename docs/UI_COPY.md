@@ -633,6 +633,28 @@ Added under `outcome.line.totals` on both cards.
 `outcome.line.defence` is the one 52-character line. The outcome card allows it; the rest stay
 at 48.
 
+### Field tap
+
+Tap away from the nest calls nearby workers off other tasks onto your recruiting trail
+([SIM_M3.md](SIM_M3.md) §5.6).
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `prompt.field.tap` | [Tap] Call {n} nearby to your trail | Away from the nest, no other prompt applies, and `TapPreview(task, PlayerPos) = n > 0` for the task `TapAnt(−1)` serves (a recruiting defence, else your recruiting haul) | 40 |
+| `toast.ants.redirected` | Turning to your trail: {n} | `AntRedirected`, `n = A` | 60 |
+| `reject.field.nothing` | No workers close enough to call. | `NothingToSend` from `TapAnt` away from the nest while a trail is recruiting | 60 |
+
+A field tap with no recruiting trail reuses `reject.no_such_task` ("No trail is calling for
+workers."). `reject.nothing.*` speak about the nest and are not shown in the field.
+
+**Assumed** — all three lines above, written with the implementation rather than by the copy
+pass. The prompt is the lowest priority away from the nest: a targeted find, a spider, the bird
+or a trail being laid all win. Cost to change: three strings.
+
+`toast.ants.redirected` leads with its number, against the Format rule above, and reads "1 workers"
+for one. It is the text the field-tap brief asked for; a copy pass should reword it (for example
+"Turned to your trail: {n}.").
+
 ---
 
 ## Credits and sound
