@@ -3,7 +3,8 @@
 Every string the player reads. The sections from *Names* to *First-run hints* are the M1
 vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, the year and saves, and
 [M3 — weather and threats](#m3--weather-and-threats) adds weather, spiders, birds, raids and the
-player ant's death. Code references the **key**; the
+player ant's death, and [M5 — Purpose](#m5--purpose) adds the opening card, the winter bar,
+the season goals and the antennae sense. Code references the **key**; the
 text here is the source for the string table. The rules behind each line are in
 [GAME.md](GAME.md) and [SIM.md](SIM.md). This file only puts them into words.
 
@@ -329,7 +330,7 @@ anywhere else. Cost to change: Game layer only, no strings.
 | `toast.season.autumn` | Autumn begins. More finds, and the queen lays half as much. | `SeasonChanged`, A = Autumn. **Changed from M1** | 60 |
 | `toast.season.winter` | Winter begins. No finds, no eggs. Workers eat more. | `SeasonChanged`, A = Winter, `Shelter < ShelterMax`. **Changed from M1** | 60 |
 | `toast.season.winter.sheltered` | Winter begins. No finds, no eggs. The thatch holds. | Same, `Shelter == ShelterMax` | 60 |
-| `toast.winter.warning` | Winter is close. Stores: {food}. Winter needs: {need} | No event. At dawn of the 28th day of the year (`Clock.Day % YearDays == 27`): `floor(Food)`, `ceil(WinterFoodNeed)` | 60 |
+| `toast.winter.warning` | Winter is close. Fill the winter bar: {food}/{need} | No event. At dawn of the 28th day of the year (`Clock.Day % YearDays == 27`): `floor(Food)`, `ceil(WinterFoodNeed)`, the same numbers the bar shows. **Changed in M5** | 60 |
 | `toast.dawn.year` | Dawn. Year {year}, day {day} | Replaces `toast.dawn` from day 41 | 60 |
 | `toast.colony.died` | The colony is gone. | `ColonyDied` after the outcome is recorded (in the sandbox), alongside the death card. Before that, the death card shows alone | 60 |
 
@@ -338,7 +339,8 @@ sentence is built from a chamber name.
 
 **Assumed** — the winter warning comes three days before winter and is raised by the Game layer.
 Cost to change: one constant. The text does not say "three days", so the constant can move
-freely.
+freely. From M5 it names the winter bar (`hud.winter`), so the warning sends the player to the
+one place that keeps the number up to date.
 
 **Assumed** — `BroodLost` and `WorkersStarved` toasts are summed over 10 s. Under-nursed brood can
 be lost every 24 s, and one toast per loss is too many. Cost to change: one constant.
@@ -686,6 +688,169 @@ string when the game gets music worth its own slider.
 
 **Assumed** — `hint.credits` shows whenever the mouse is free, so a gamepad player, whose mouse
 is never locked, always sees it. Cost to change: one condition in the HUD.
+
+---
+
+## M5 — Purpose
+
+The strings that say what the year is for: the opening card, the winter bar, the season goals,
+the antennae sense and what the nest can do. The rules are in [GAME.md](GAME.md) ("Purpose",
+"Finds"). Voice, format and the M2 and M3 parameter widths hold. New parameters, counted at
+their widest: `{season}` is a season name (12); `{done}` and `{total}` are counts (3); `{left}` is
+whole days of winter left (2); `{slots}` is a slot count (2). `{n}` in `hud.find.distance` is at
+most the sense range in body lengths, so 2 digits.
+
+These keys change text in M5 and are listed in their M2 table only: `toast.winter.warning`.
+
+### Words
+
+| word | means | never |
+|---|---|---|
+| the winter bar | The HUD gauge labelled `hud.winter`: food stored against what winter will need | gauge, meter, progress |
+| goal met | A season goal done | complete, achieved, unlocked |
+| nearby / smell it | A find inside the antennae's range | detected, sensed, ping |
+| body lengths | Distance to a find. One worker is about one unit long | cm, units, steps |
+
+**Assumed** — the player calls the gauge "the winter bar", from its label "For winter" and the
+nest panel's "Food for winter". Cost to change: the label, three goal and warning strings.
+
+**Assumed** — the antennae sense is told as smell ("you can smell it from here"). The simulation
+models a range, not a scent drifting on the air, so no string says which way the wind blows or
+that a smell is strong or faint. Cost to change: the six scent toasts.
+
+### Opening card
+
+Shown over the garden on a new colony's first frame (`OutcomeScreenPresenter.Mode.Opening`). It
+reuses the outcome card's layout: title, body, then the measure where the outcome card puts its
+headline, then the action.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `card.open.title` | The year ahead | Card title | 30 |
+| `card.open.body` | A year is forty days. The last ten are winter: no new finds, and the colony lives on what it stored. What counts is the workers alive when spring returns. | Under the title | 160 |
+| `card.open.measure` | Workers alive when spring returns | Where the outcome card's headline sits. It names the number that card will show as `outcome.headline` | 60 |
+| `card.open.begin` | [Interact] Into the garden | The action. Interact, Mark or Pause closes the card; only Interact's glyph is drawn | 30 |
+
+**Assumed** — the title "The year ahead", and "forty" and "ten" written into the body. If
+`DaysPerSeason` changes, the body changes with it. Cost to change: one string.
+
+### Winter bar
+
+A row in the colony panel, under Food.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `hud.winter` | For winter | Row label, always | 12 |
+| `hud.winter.value` | {food}/{need} | Row value, spring to autumn: `floor(Food)` / `ceil(WinterFoodNeed)` | 14 |
+| `hud.winter.cap_short` | Too little room. Dig a store chamber. | Under the row while `FoodCapacity < WinterFoodNeed` (class `winter--capped`), spring to autumn | 40 |
+| `hud.winter.days` | Days of food: {d}/{left} | Row value in winter, in place of `hud.winter.value`: `FoodDaysLeft` to one decimal place, whole days of winter left | 30 |
+
+"Room" in `hud.winter.cap_short` is the stores' food room, the word `chamber.store.effect` uses.
+
+### Season goals
+
+One line under the hint: the progress, the first goal not yet met, and its why, each a whole
+string placed by the layout. Goals are guidance, not gates.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `goal.progress` | {season}: {done}/{total} | Lead of the goals line: `season.{Clock.Season}`, goals met this season, goals this season | 24 |
+| `goal.spring.cube` | Haul the sugar cube home | `FindsHauled(SugarCube) < 1` | 40 |
+| `goal.spring.cube.why` | Its food pays for the first chamber you dig. | With the goal | 50 |
+| `goal.spring.brood` | Dig a second brood chamber | `BuiltChambers.Brood < 2` | 40 |
+| `goal.spring.brood.why` | The queen lays only while the brood has room. | With the goal | 50 |
+| `goal.spring.workers` | Grow the colony. Workers: {have}/{need} | `Population < TierThreshold(2)`: `Population`, `TierThreshold(2)` | 40 |
+| `goal.spring.workers.why` | Bigger finds need more workers to lift. | With the goal | 50 |
+| `goal.summer.insect` | Haul a dead insect home | `FindsHauled(DeadInsect) < 1`, colony established | 40 |
+| `goal.summer.insect.why` | No find in the garden holds more food. | With `goal.summer.insect` | 50 |
+| `goal.summer.insect.processing` | Become established to take dead insects | In place of `goal.summer.insect` while `Colony.Tier < 2` | 40 |
+| `goal.summer.insect.processing.why` | The nest shows what is still missing. | With the processing line. The nest panel's next-tier list names the chamber and the workers | 50 |
+| `goal.summer.store` | Dig a second store chamber | `BuiltChambers.Store < 2` | 40 |
+| `goal.summer.store.why` | Winter can eat only what the stores can hold. | With the goal | 50 |
+| `goal.summer.stores` | Store half the food winter needs | `Food < 0.5 · WinterFoodNeed` | 40 |
+| `goal.summer.stores.why` | The winter bar shows how much is still to store. | With the goal | 50 |
+| `goal.autumn.need` | Store all the food winter needs | `Food < WinterFoodNeed` | 40 |
+| `goal.autumn.need.why` | No finds in winter. Only what is stored. | With the goal | 50 |
+| `goal.autumn.thatch` | Thatch the nest with pinecones: {n}/{max} | `Shelter < ShelterMax`: `Shelter`, `ShelterMax` | 40 |
+| `goal.autumn.thatch.why` | Each pinecone makes winter cheaper. | With the goal | 50 |
+| `goal.autumn.thatch.mature` | Become mature to haul pinecones | In place of `goal.autumn.thatch` while `Colony.Tier < 3` | 40 |
+| `goal.autumn.thatch.mature.why` | Pinecones take sixteen ants and the last slots. | With the mature line | 50 |
+| `goal.autumn.spider` | Drive off a spider | `Stats.SpidersDrivenOff < 1` | 40 |
+| `goal.autumn.spider.why` | A spider on a trail keeps taking workers. | With the goal | 50 |
+| `goal.winter.alive` | Make the stores last until spring | Winter, `Food` has stayed above 0 | 40 |
+| `goal.winter.alive.why` | Every worker alive in spring is counted. | With the goal | 50 |
+| `goal.winter.failed` | The stores are empty. Workers starve. | Winter, once `Food` has reached 0. In place of `goal.winter.alive` for the rest of the winter | 40 |
+| `goal.winter.failed.why` | Whoever lives to spring is still counted. | With the failed line | 50 |
+
+The goals are written as orders and the whys as plain facts, so the line reads "do this, because
+that" in any order the layout sets them.
+
+`goal.autumn.spider.why` is the plan's reason: the next threat, raids, is set by the rival and the
+colony's tier, so defending is worth learning before then. A spider's own cost would read more
+directly ("A spider on a trail keeps taking workers.") if the plan's reason does not land in
+the playtest.
+
+### Toasts — goals
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `toast.goal.spring.cube` | Spring goal met. The sugar cube is in the stores. | `GoalTracker.JustCompleted`, that goal. After `toast.item.delivered` on the same frame | 60 |
+| `toast.goal.spring.brood` | Spring goal met. The queen has room to lay. | Same. After `toast.chamber.built.brood` | 60 |
+| `toast.goal.spring.workers` | Spring goal met. Workers enough for bigger finds. | Same | 60 |
+| `toast.goal.summer.insect` | Summer goal met. The biggest find is home. | Same | 60 |
+| `toast.goal.summer.store` | Summer goal met. More room for winter's food. | Same | 60 |
+| `toast.goal.summer.stores` | Summer goal met. Half of winter's food is stored. | Same | 60 |
+| `toast.goal.autumn.need` | Autumn goal met. Winter's food is stored, for now. | Same. "For now": the need grows with every worker hatched | 60 |
+| `toast.goal.autumn.thatch` | Autumn goal met. The nest is thatched for winter. | Same | 60 |
+| `toast.goal.autumn.spider` | Autumn goal met. A spider is driven off. | Same. After `toast.spider.driven_off` | 60 |
+| `toast.goal.winter.alive` | — (not shown; the outcome card says it) | Dropped 2026-10-06: the card covers the frame it would appear on | — |
+| `toast.goal.season.spring` | Every spring goal met. The colony is on its feet. | The last of a season's goals is met, after that goal's toast | 60 |
+| `toast.goal.season.summer` | Every summer goal met. The stores are growing. | Same | 60 |
+| `toast.goal.season.autumn` | Every autumn goal met. Let winter come. | Same | 60 |
+
+A goal toast names its season, not the current one: a spider driven off in spring still reads
+"Autumn goal met". Winter has one goal, so it has no season toast.
+
+**Assumed** — the frame "{Season} goal met." at the start of every goal toast, so the player
+learns to tell goal toasts from event toasts by their first words. Cost to change: thirteen strings.
+
+### Antennae
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `hud.find.distance` | Body lengths: {n} | Small label under a find's name, in view and within `SenseRadius`: distance from the player in units, rounded | 16 |
+| `toast.scent.sugar_cube` | A sugar cube nearby. You can smell it from here. | `ItemSpawned` within the scent range, sugar cube | 60 |
+| `toast.scent.seed` | A seed nearby. You can smell it from here. | Same, seed | 60 |
+| `toast.scent.leaf` | A leaf nearby. You can smell it from here. | Same, leaf | 60 |
+| `toast.scent.dead_insect` | A dead insect nearby. Haul it before it spoils. | Same, dead insect, `Colony.Tier >= 2` | 60 |
+| `toast.scent.dead_insect.gated` | A dead insect nearby. Too big for a young colony. | Same, dead insect, `Colony.Tier < 2` | 60 |
+| `toast.scent.pinecone` | A pinecone nearby. Thatch, once the colony is mature. | Same, pinecone, at any tier | 60 |
+
+The three plain finds share one tail on purpose: the toast comes at most once a minute, and the
+same words teach that the sense is a thing you have, not a lucky find.
+
+`toast.scent.pinecone` holds at every tier: at Mature it is a reminder, below it a promise. It
+needs no gated twin.
+
+**Assumed** — the gated insect is "too big for a young colony", which is the player's sense of
+it. The rule is a processing chamber and 25 workers, which the find's own prompt and the nest
+panel spell out. Cost to change: one string.
+
+### Nest panel — what the nest can do
+
+One line under `nest-tier`.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `nest.can.1` | Takes seeds, leaves and sugar cubes. Chamber slots: {slots} | Tier 1: `SlotsByTier[0]` | 70 |
+| `nest.can.2` | Takes seeds, leaves, sugar cubes and dead insects. Chamber slots: {slots} | Tier 2: `SlotsByTier[1]` | 70 |
+| `nest.can.3` | Takes every find, pinecones too. Chamber slots: {slots} | Tier 3: `SlotsByTier[2]` | 70 |
+
+Each line lists everything the tier takes rather than "and dead insects too", so no line depends
+on the player having read the one before.
+
+**Assumed** — "Chamber slots" is the total the tier opens (4, 7, 10), dug or not. The cutaway
+draws which are free. Cost to change: one parameter.
 
 ---
 

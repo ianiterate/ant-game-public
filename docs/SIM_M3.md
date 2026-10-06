@@ -132,7 +132,7 @@ Winter (length 4). Tier-indexed arrays have length `TierThresholds.Length + 1`.
 | `SpiderSpeed` | `1f` | u/s along the loop. Not slowed at night. |
 | `SpiderMoveSpeed` | `3f` | u/s when moving to a new den. |
 | `SpiderKillSeconds` | `10f` | One worker taken per this many seconds of workers being within reach. |
-| `SpiderNestClearance` | `25f` | u. A den is never closer to the nest than this. |
+| `SpiderNestClearance` | `16f` | u. A den is never closer to the nest than this; its danger reaches to 6 u. |
 | `SpiderRelocateSeconds` | `30f` | Seconds with nobody in reach before a spider follows the traffic to the busiest trail. |
 | `SpiderDefenders` | `6` | Party size that attacks a spider (the player counts as one, §5.3). |
 | `SpiderToughness` | `50f` | Defender-seconds of fighting that drive a spider off. |
@@ -410,6 +410,24 @@ arrives (the arrival is used up). On success, two more draws: `Dir = u < 0.5 ? +
 
 The den is on the trail, so the loop crosses it twice. The kill disk (radius 4 around a point on a
 radius-6 loop) covers the trail 46% of the time.
+
+**Why the clearance is 16 u.** Finds lie near the nest (GAME.md: half the seeds and leaves within
+about 33 u, 37 u on average), so a typical trail is 20–40 u long, and the den is drawn at 30–80%
+of it: 6–32 u out. A 25 u clearance rejected most of those, so spiders fell back to the ring, away
+from the traffic, and stopped mattering exactly when finds were close (balance bots after the
+near-bias change: an ignoring colony lost 1–7 workers to spiders a year instead of 6–10). At 16 u
+a trail of 25 u or more nearly always takes the den (95% for 25 u over 8 tries, all but certain
+from 30 u). 16 is the floor the geometry allows:
+- the spider's ground (loop 6 + reach 4) reaches no closer than 6 u to the nest centre, 2 u
+  outside `NestRadius`, so a player standing at the nest (taps, the panel, a rally) is never in
+  reach;
+- a defence trail is then at least 16 u long, above the 13 u `TooShort` floor, and its muster
+  point (12 u short of the den) is at or beyond the nest's edge.
+
+Finds closer than about 20 u stay spider-free: the nest's doorstep is the safe, poor ground.
+
+**Assumed** — `SpiderNestClearance = 16`. Cheap to change (one number); below about 15 the
+spider's reach overlaps the nest ring and defence trails can come out `TooShort`.
 
 **Assumed** — spiders come at night and settle where traffic is. Medium cost to change: the
 placement rule is what makes spiders matter (§16.2). Random placement would leave most spiders
@@ -1195,7 +1213,9 @@ Standard geometry is SIM.md's: nest at the origin, cube at `(40, 0)`.
 - `HidesInRain`: rain for 600 ticks with a worker in reach: no kill, `Pos` unchanged.
 - `ArrivesAtNightOnly`: `Hot()`: every `ThreatSpawned(Spider)` is on a tick with `IsNight`; none on day 0.
 - `DenOnTheBusiestTrail`: two trails with 4 and 1 ants: the den lies on the first (within 1e-3 of
-  `Sample(s)` for some `s` in `[0.3 L, 0.8 L]`) and ≥ 25 u from the nest.
+  `Sample(s)` for some `s` in `[0.3 L, 0.8 L]`) and ≥ 16 u from the nest. With a 30 u trail and
+  no other spider, at least 98 of 100 placements (seeds 1–100) land on the trail (each misses
+  with probability 0.47⁸ ≈ 0.2%).
 - `AtMostSpiderMax`: `Hot()`, 5 days: never more than 2 active.
 - `LeavesAfterTwoDays`: `SpiderLeft` on placement tick + 7 200 (±1); slot inactive the next tick.
 - `MovesWhenQuiet`: no ants near its loop for 300 ticks and a busy trail elsewhere →
@@ -1263,7 +1283,7 @@ Standard geometry is SIM.md's: nest at the origin, cube at `(40, 0)`.
   the next egg on schedule.
 
 ### `DeterminismTests` (add)
-- `M3_SameSeedIdentical`: `Hot()`, `M2Defs()`, seed 2035 (**Assumed** — the seed is chosen so the run contains every required event kind, including a worker lost to a spider, which seed 2024 no longer does now that a full party wins unhurt; re-pick the seed when a retune empties the event set), 72 000 ticks, `M3Script`: `M2Script` plus,
+- `M3_SameSeedIdentical`: `Hot()`, `M2Defs()`, seed 2026 (**Assumed** — the seed is chosen so the run contains every required event kind, including a worker lost to a spider, which few seeds do now that a full party wins unhurt; 2035 served until the M5 near-biased spawn law and 16 u den clearance shifted the stream, and 2026 is the lowest from 2024 that does (2028 and 2037 also do); re-pick the seed when a retune empties the event set), 72 000 ticks, `M3Script`: `M2Script` plus,
   when a spider is within 30 u of the player's path, walk to 8 u of it and `MarkThreat`, walk home,
   tap once; `Alarm` whenever a shadow is within 10 u; walk to the nest on `ThreatSpawned(Raid)`; and
   once, on day 2, walk into a spider. Two worlds agree on `StateHash` every tick. The run must
@@ -1275,7 +1295,9 @@ Standard geometry is SIM.md's: nest at the origin, cube at `(40, 0)`.
   `ThreatProgress[Raid]` → `StateHash` changes.
 
 ### `SaveRoundTripTests` (add)
-- `RoundTrip_M3` at four points of the `M3Script` run (seed 11): mid-fight with a spider, a raid
+- `RoundTrip_M3` at four points of the `M3Script` run (seed 12; **Assumed** — the lowest from 11
+  whose run reaches all four points; seed 11 stopped reaching a spider fight when the M5 spawn
+  retune shifted the stream; re-pick when a retune loses a point): mid-fight with a spider, a raid
   marching, a bird shadow up, the player down → `Ok`, equal `StateHash`, and 1 000 more ticks with
   equal hashes and identical event sequences.
 - `RoundTrip_JsonStable` extends to these points.
@@ -1322,11 +1344,12 @@ Standard geometry is SIM.md's: nest at the origin, cube at `(40, 0)`.
   and the alarm is rarely within reach, so bird losses are left out:
   1. *Per spider*: (workers lost to spiders, fights included) ÷ (spiders that arrived), pooled over
      the five seeds. The defending bot's is at most half the ignoring bot's.
-  2. *Controllable cost*: lost to spiders + lost to raids + `FoodLooted / 10`, median over the
-     seeds. The ignoring bot's is at least 1.5× the defending bot's.
+  2. *Controllable cost*: workers lost to spiders, fights included, median over the seeds. The
+     ignoring bot's is at least 1.5× the defending bot's. (Was spider + raid + `FoodLooted / 10`;
+     see the **Assumed** note at the end of §16.3.)
 
-  Log both bots' workers as winter breaks, but assert nothing on them: §16.3 shows the headline is
-  food-bound and moves least of all.
+  Log both bots' raid losses, food looted and workers as winter breaks, but assert nothing on them:
+  §16.3 shows the headline is food-bound and moves least of all.
 
 ---
 
@@ -1347,7 +1370,10 @@ as expected rates derived from the rules above:
   (§4.4). Each kill weakens the trail (§3.3), and the model charges an undefended spider 35% of the
   income of the hauls it sits on. That figure is an estimate of recruiting slowed by a trail
   repeatedly cut to 0.7×, and it is the model's largest uncertainty. A defence with a full party
-  costs no worker (§5.5).
+  costs no worker (§5.5). The model assumes a spider can always den on the trail in use, which
+  holds for trails of 25 u and more under the 16 u clearance (§4.2); the near-biased finds make
+  the shortest trails spider-free, so the model slightly overstates spider losses for a player who
+  works only the inner ring.
 - **Birds**: 1.6 workers a strike, 70% of birds finding a target.
 - **Raids** run the exact §7.4 arithmetic against `Population − 6` in the nest (the haulers
   carrying when raiders arrive). They come on about days 13, 20 and 25, from a rival growing 30 → 83.
@@ -1411,6 +1437,16 @@ Whether threats should hit the headline harder is a question about the headline 
 show more there, the cheapest lever is to put threat deaths on the outcome screen beside the
 workers; the stats already hold them.
 
+**Assumed** (M5) — `BotYear_DefendingPays` measures the defend decision on spider losses alone
+(fights included), no longer on spider + raid + looted/10. Defending against spiders cannot change
+how a raid goes, and after the M5 spawn retune (nearer finds, 16 u den clearance) raids dominate
+both bots' costs: in the five-seed run the defending bot lost 7/9/7/7/7 workers to raids and the
+ignoring bot 8/5/6/5/5, with looting about equal (50–67 against 53–73), so the combined metric came
+out at 1.33× and measured raid luck more than defence. On spiders alone the gap is the one the
+decision makes: defending lost 0/0/0/0/0 against the ignoring bot's 7/4/5/5/10 (per spider 0.00
+against 1.48). Raid losses, looting and year-end workers are still logged. Cheap to change: one
+test property; if raids should reward being home, that wants its own bot and its own test.
+
 ### 16.4 Feedback loops
 
 - **Rival**: logistic growth toward 100, minus every raider killed. Repulsing raids holds it near
@@ -1461,9 +1497,11 @@ player to ~125.
 - **A defend trail that wiggles near its end** can put the muster point inside the spider's
   ground: the standoff is measured along the trail, not in a straight line. Rare, because players
   walk straight home. If it shows up, measure the muster point by straight-line distance from the den.
-- **A spider on the nest's doorstep** cannot happen (25 u clearance). Trails shorter than 25 u are
-  therefore spider-safe, and players may learn to farm near finds first. That is mild and leaves
-  the near ring as the safe, poor ground.
+- **A spider on the nest's doorstep** cannot happen (16 u clearance; its reach stops 6 u from the
+  nest). Trails shorter than about 20 u are therefore spider-safe, and players may learn to farm
+  the nearest finds while a spider is out. That is mild: the near ring holds seeds and leaves,
+  the poorest finds, and the spider follows whatever trail is busiest the moment one is long
+  enough.
 - **Tap prefers a defence.** While a defence recruits, Tap cannot hurry the haul. Intended
   priority; rarely matters, since a defence fills in seconds.
 - **A raid during a long haul** recalls nothing that is carrying, so the party can arrive into

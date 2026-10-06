@@ -117,6 +117,63 @@ colony dies is always offered. It is separate from the player ant's own death (s
 weather, threats). Cheap to change. **Assumed** — these season
 effects and the headline measure. Cheap to change.
 
+## Purpose
+
+The year asks one thing: have as many workers alive as you can when spring returns. The game
+says so at the start and keeps it in view.
+
+**The opening card.** A new colony opens on a card before the first step. It says that the year
+is forty days in four seasons, that winter brings no finds and costs more to live through, and
+that what counts is the number of workers alive as spring returns. Interact, Mark or Pause
+closes it. It appears for a new colony only — not when a save is resumed, and never over a
+message about a save that cannot be loaded.
+
+**The winter gauge.** The colony panel in the HUD carries one bar: the food in the stores
+against what winter will need for the colony as it stands now (a full winter's upkeep for
+today's workers, less what the thatch saves). The need grows as the colony grows, so the bar can
+fall while the stores rise. A tick on the bar marks what the store chambers can hold; while the
+tick sits short of the need, the stores cannot hold enough and the bar says so — another store
+chamber is the answer. In winter the bar shows instead how many days the stores will last
+against the days of winter left. The warning three days before winter points at the gauge.
+
+**Season goals.** Each season has goals, shown one at a time in a line under the hints: the
+season, how many of its goals are done, the first one not yet done, and one line on why it
+matters. They are guidance, not gates. Nothing is locked behind them and nothing is awarded for
+them; a goal already met when a colony is loaded counts as done without a fanfare. Completing a
+goal, and completing a season's goals, each raises a short toast. While the first-run hints are
+still showing, they come first.
+
+**Assumed:** a season's goals only count from that season's first day — one already met
+earlier is marked done quietly when its season begins, and while the current season's goals are
+all done the line shows the next season's first goal dimmed as upcoming (cheap to change: one rule
+in the goals tracker).
+
+| Season | Goal | Why |
+|---|---|---|
+| Spring | Haul the sugar cube | Sugar is the first store. |
+| Spring | Dig a second brood chamber | The queen lays only with room. |
+| Spring | Reach 25 workers | More workers lift bigger finds. |
+| Summer | Haul a dead insect | The biggest food in the garden. |
+| Summer | Dig a second store chamber | Stores decide winter. |
+| Summer | Store half of winter's need | The gauge, halfway. |
+| Autumn | Store all of winter's need | What you hold is what survives. |
+| Autumn | Thatch the nest with 4 pinecones | Each one cuts winter's cost. |
+| Autumn | Drive off a spider | Raids scale with the rival and your tier, not your size. |
+| Winter | Keep everyone alive: the stores never run dry | — |
+
+Until the colony is established, the dead-insect goal reads "become established" instead; the same
+holds for pinecones until it is mature.
+
+**Assumed** — this goal list, its order, and "half of winter's need" as the summer mark. Cheap to
+change: the goals are read from the colony's counts, not stored, so editing them breaks no save.
+
+**What the nest can do.** The nest panel says, under the colony's tier, what that tier opens:
+a Young colony takes seeds, leaves and sugar and has 4 slots to dig; an Established one adds dead
+insects and 7 slots; a Mature one adds pinecones and 10 slots.
+
+The economy stays gentle: a colony's hauls comfortably cover its upkeep. The pressure comes from
+winter and from what the nest can hold, not from scarcity.
+
 ## Finds
 
 | Find | Ants to haul | Tier | Food | Notes |
@@ -131,11 +188,30 @@ The player counts as one ant toward starting the haul, while standing within rea
 find; the party then carries it home whether or not you stay. Numbers are the first cut and live in
 `Assets/Settings/`, not in code.
 
-Finds appear over time at random places around the nest. Each lies there a while before it is
-gone: seeds for two days, leaves for a day and a half, a sugar cube for three, a pinecone for
-four. A find you have marked stays until it is hauled. There are no scout ants: every find is
-found and marked by you. **Assumed** — the spawn rates and lifetimes, and no scouts. Cheap to
-change, though scouts would need the economy retuned so that they do not replace the player.
+Finds appear over time at random places around the nest, more often near it than far: half of
+the seeds and leaves lie within about 33 u of the nest, about 37 u on average, and none farther
+than 90 u. Up to ten seeds and eight leaves lie in the garden at once, with at most one sugar
+cube, two dead insects and two pinecones. Each lies there a while before it is gone: seeds for
+two days, leaves for a day and a half, a sugar cube for three, a pinecone for four. A find you
+have marked stays until it is hauled. There are no scout ants: every find is found and marked
+by you. **Assumed** — the spawn rates and lifetimes, and no scouts. Cheap to change, though
+scouts would need the economy retuned so that they do not replace the player. **Assumed** — the
+near-biased spread and the limits of ten seeds and eight leaves. Cheap to change: one rule and
+data.
+
+One dead insect lies in the garden from the start, always within 40 u of the nest (25 to 40 u),
+inside the range you sense finds at, so a Young colony can walk up to the biggest food there is
+and read what it needs: an Established colony. It rots in three days, long before a colony can
+take it. **Assumed** — the starting insect and its 40 u limit. Cheap to change: data.
+
+**Antennae.** You sense unclaimed finds within about 45 u, the six nearest at most. One in view
+carries a small label with its name and distance in body lengths; one off screen shows as an
+amber chevron at the edge of the screen, pointing towards it. Finds the colony cannot take yet
+are shown dimmed. The chevrons hide while you are laying a trail. When a find appears within
+about 40 u, a toast says you have caught its scent, at most once a minute. The grass parts
+around a find so that it can be seen from a few steps away. **Assumed** — the 45 u range, six
+markers, the 40 u scent range and once-a-minute limit. Cheap to change: presentation constants,
+nothing in the simulation or the save.
 
 ## Pheromone trails
 
@@ -159,7 +235,8 @@ seconds. Parties already carrying keep going. When it stops, walk your trail aga
 Spring and autumn are wettest, summer driest.
 
 **Spiders** arrive at night and stay two days. Each settles on the busiest trail and walks a small
-loop across it; when that trail goes quiet it moves to whichever trail the colony is using next. A
+loop across it, never closer than a short walk from the nest; when that trail goes quiet it
+moves to whichever trail the colony is using next. Finds right by the nest are safe from them. A
 worker within reach is taken now and then, about one for every ten seconds workers spend near it,
 and each loss weakens the trail. Mark a spider the way you mark a find and walk home: workers
 gather just short of it, and six of them drive it off without loss. Fewer still win but lose some;
@@ -261,7 +338,9 @@ browsers only; versioned JSON saves; commercial-safe asset licences only. From
 [SIM_M2.md](SIM_M2.md): nursing need and taps that take nurses; queen laying, brood and
 starvation rates; chamber kinds, costs and slots; tier chamber requirements; find spawning and
 lifetimes; pinecones as shelter; winter costs more; outcome = workers alive as spring begins;
-no scout ants; the panel orders digging only. From [SIM_M3.md](SIM_M3.md): the player ant
+no scout ants; the panel orders digging only; near-biased find spawning, ten seeds and eight
+leaves at once, and one dead insect at the start. From the Purpose section: the season goals and
+the summer half-way mark; the antennae range, markers and scent toast. From [SIM_M3.md](SIM_M3.md): the player ant
 respawns and the queen cannot die; the weather and threat numbers; spiders defended by marking;
 the alarm on Interact; automatic nest defence; re-walking a trail renews it; a separate random
 stream for weather and threats; colonies saved before M3 continue with fresh weather and threats.

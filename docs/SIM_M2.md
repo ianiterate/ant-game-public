@@ -496,6 +496,7 @@ public int SpawnMax;            // live finds of this kind (Lying, Claimed, Haul
 public float SpawnMinDistance;  // u from the nest
 public float SpawnMaxDistance;  // u from the nest
 public int StartCount;          // placed at construction
+public float StartMaxDistance;  // u; start placements land no farther out; 0 = SpawnMaxDistance
 public float LingerSeconds;     // a spawned find left Lying this long is gone; 0 = never
 public int ShelterValue;        // added to Colony.Shelter on delivery
 ```
@@ -511,9 +512,9 @@ The five shipped defs (`Assets/Settings/Items/*.asset`; SugarCube updated, four 
 | Kind | Ants | Tier | Food | Spoil s | Linger s | Radius | Spr | Sum | Aut | Win | Max | Min u | Max u | Start | Shelter |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | SugarCube | 6 | 1 | 60 | 0 | 1080 | 1.2 | 0.15 | 0.3 | 0.15 | 0 | 1 | 40 | 110 | 0 | 0 |
-| Seed | 2 | 1 | 15 | 0 | 720 | 0.4 | 2.5 | 2.5 | 4 | 0 | 6 | 15 | 90 | 2 | 0 |
-| Leaf | 4 | 1 | 10 | 0 | 540 | 1.5 | 2 | 2 | 3 | 0 | 5 | 15 | 90 | 1 | 0 |
-| DeadInsect | 10 | 2 | 120 | 1080 | 0 | 1.5 | 0.25 | 0.4 | 0.35 | 0 | 2 | 40 | 110 | 0 | 0 |
+| Seed | 2 | 1 | 15 | 0 | 720 | 0.4 | 2.5 | 2.5 | 4 | 0 | 10 | 10 | 90 | 2 | 0 |
+| Leaf | 4 | 1 | 10 | 0 | 540 | 1.5 | 2 | 2 | 3 | 0 | 8 | 10 | 90 | 1 | 0 |
+| DeadInsect | 10 | 2 | 120 | 1080 | 0 | 1.5 | 0.25 | 0.4 | 0.35 | 0 | 2 | 25 | 110 | 1 | 0 |
 | Pinecone | 16 | 3 | 0 | 0 | 1440 | 3.0 | 0 | 0.1 | 0.4 | 0 | 2 | 50 | 110 | 0 | 1 |
 
 The tutorial cube placed by the scene counts toward the sugar cube's `SpawnMax` of 1. No second
@@ -522,6 +523,19 @@ cube spawns while it lies there.
 **Assumed** — this table: rates, lifetimes, distances, and radii for the new finds (a seed
 0.4 u, a leaf and a beetle 1.5 u, a pinecone 3 u). Cheap to change: data. The meshes must match
 the radii.
+
+**Assumed** (M5) — seeds and leaves come in to 10 u (was 15) and up to 10 seeds and 8 leaves lie
+at once (was 6 and 5), so more of what the garden offers is within reach; spawn *rates* are
+unchanged, so the food offered per day (§6.1) is unchanged. Cheap to change: data.
+
+**Assumed** (M5) — one dead insect is placed at construction (`StartCount 1`, min 25 u, was 0 and
+40 u) so a Young colony sees a find it cannot yet take and reads the tier-2 prompt on it.
+Spawning is not tier-gated; hauling is. It spoils from `Lying` after 3 days (`ItemSpoiled`), well
+before any colony is Established (day ~8, §14.2), so it is a signpost, not food. Start placements of a kind use `StartMaxDistance` in place of `SpawnMaxDistance` when it is set
+(> 0); DeadInsect's is 40, so the starting insect always lies 25–40 u out, inside the 45 u
+antennae range, while spawned insects keep 25–110 u. Placing it adds draws at construction, so every
+seed's post-construction RNG stream shifts: tests that compare same-seed worlds are unaffected;
+any test that hard-codes positions or tick counts from a seeded start must be re-derived.
 
 ### 5.2 `SpawnSystem.Step` (tick step 7)
 
@@ -543,15 +557,37 @@ for k in 1 .. ItemKinds.Count−1 (ascending):
 `LiveCount(k)` = active items of kind `k` in `Lying`, `Claimed` or `Hauling`.
 
 **`TryPlace(k)`**: up to `SpawnPlacementTries` times:
-`a = rng.Range(0, 2π)`; `r2 = rng.Range(min², max²)`; `p = NestPos + (cos a, sin a) · sqrt(r2)`
-(uniform over the ring). Both draws are made on every try. Reject `p` if `!SpawnArea.Contains(p)`
-or it is within `SpawnMinSpacing` of the `Pos` of any active item not `Delivered`/`Gone`.
-Otherwise take the lowest free item slot as `SpawnItem` does, set `Expires = true`, and raise
-`ItemSpawned(A = index, B = kind, P = p)`. If all tries fail, nothing spawns; this is about
-1 in 10⁷ for the default ring and patch.
+`a = rng.Range(0, 2π)`; `u = rng.Range(0, 1)`; `r = max − (max − min) · sqrt(u)`;
+`p = NestPos + (cos a, sin a) · r`. Both draws are made on every try, so the RNG shape (two draws
+per try) is the same as M2's uniform-ring law and only the values change. Reject `p` if
+`!SpawnArea.Contains(p)` or it is within `SpawnMinSpacing` of the `Pos` of any active item not
+`Delivered`/`Gone`. Otherwise take the lowest free item slot as `SpawnItem` does, set
+`Expires = true`, and raise `ItemSpawned(A = index, B = kind, P = p)`. If all tries fail, nothing
+spawns; with every kind at its `SpawnMax` this is about 2 in 10⁵ placements (Monte Carlo,
+default patch), up from effectively never under the uniform ring, because the inner band is
+denser.
+
+**Near-biased radius (M5).** The radial density is linear, falling to zero at the outer edge:
+`f(r) = 2 (max − r) / (max − min)²` on `[min, max]`, so a find is most likely just outside `min`
+and never likelier farther out. Mean `r = min + (max − min)/3`; median
+`r = max − (max − min)/√2`. Per unit *area* the density is ∝ `(max − r)/r`, so the inner band
+is several times denser than the outer one. (The M2 law, `r = sqrt(Range(min², max²))`, was
+uniform per unit area, which put most finds near the outer edge.)
+
+| Kind | Min–max u | Mean r, M2 → M5 | Median, M5 | Within 45 u, M2 → M5 |
+|---|---|---|---|---|
+| Seed, Leaf | 15–90 → 10–90 | 61 → 37 | 33 | 23% → 68% |
+| DeadInsect | 40–110 → 25–110 | 80 → 53 | 50 | 4% → 42% |
+| SugarCube | 40–110 | 80 → 63 | 60 | 4% → 14% |
+| Pinecone | 50–110 | 84 → 70 | 68 | 0 → 0 |
+
+Figures are for the radius draw before rejection at the patch edge (`SpawnArea`, ±95 u), which
+trims the far end of the 110 u kinds a little. The law applies to
+every kind, so spawned sugar cubes and pinecones also come nearer, though their minimum keeps
+them off the nest's doorstep.
 
 **Construction**: after the colony is set up, for each spawnable `k` ascending, call
-`TryPlace(k)` `StartCount` times, then `SpawnThreshold[k] = rng.Range(1 − j, 1 + j)` and
+`TryPlace(k)` `StartCount` times (with `max = StartMaxDistance` when it is set), then `SpawnThreshold[k] = rng.Range(1 − j, 1 + j)` and
 `SpawnProgress[k] = 0`. Construction raises no events (the queue is cleared at the start of
 every tick). The Game layer scans `Items` after construction or load.
 
@@ -568,8 +604,9 @@ public World(SimConfig config, ItemDef[] itemDefs, Vector2 nestPos, int seed)   
 `SimRunner` passes the ground plane's bounds inset by 5 u: `(−95, −95, 190, 190)` for the
 current patch.
 
-**Assumed** — finds land uniformly in a ring around the nest anywhere in the patch rectangle,
-stones included, since stones are walkable. Each interval is jittered by ±50%. Cheap to change.
+**Assumed** — finds land in a ring around the nest, near-biased as above, anywhere in the patch
+rectangle, stones included, since stones are walkable. Each interval is jittered by ±50%. Cheap
+to change: one function, and tests compare same-seed worlds rather than golden positions.
 Authored spawn points are the alternative if finds land somewhere silly.
 
 ### 5.3 Expiry and spoilage — `ItemSystem.Step` (tick step 6)
@@ -1064,8 +1101,14 @@ config and `Defs()` (no spawning).
 - `ConstructionOnlyMovesUp`: no `TierChanged` at construction.
 
 ### `SpawnTests` (with `M2Defs()`)
-- `StartingFinds`: after construction, 2 seeds and 1 leaf, all `Lying`, `Expires`, each within
-  its kind's min–max distance of the nest, inside the area, and pairwise ≥ 8 u apart.
+- `StartingFinds`: after construction, 2 seeds, 1 leaf and 1 dead insect, all `Lying`, `Expires`,
+  each within its kind's min–max distance of the nest, inside the area, and pairwise ≥ 8 u apart;
+  the insect's `TierRequired` is above the starting tier.
+- `NearBias`: seeds only, 10–90 u, `StartCount 5`, no spawn rates; 400 worlds (seeds 1–400), so
+  2 000 placements at construction, five to a world so the spacing rule barely skews them → every
+  `r` in `[min, max]`, finds in a world pairwise ≥ `SpawnMinSpacing` apart, mean `r` within ±3 u of
+  `min + (max − min)/3` (36.7 u; the standard error is about 0.4 u, so ±3 u fails only on a wrong
+  law), and two worlds from the same seed place every slot identically.
 - `NoSpawnDefsNoDraws`: with `Defs()`, `Rng.State` after construction equals `new Rng(seed).State`.
 - `MeanRate`: only seeds spawnable (`SpawnMax 64`, `LingerSeconds 36`), spring, 36 000 ticks →
   22–28 `ItemSpawned` for seeds.

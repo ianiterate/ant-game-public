@@ -12,9 +12,15 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-06 (3a4791e)
+- **Build:** 2026-10-06 (b280de0)
 
 ## What you can do right now
+
+You have one year, and one measure: how many workers are alive when spring comes back. The
+game says so when a colony begins, a winter bar in the corner shows stores against what winter
+will cost, and each season sets three goals that explain themselves. Your antennae sense finds
+within a hand's width: chevrons at the screen edge point at them, and the grass parts around
+them.
 
 You have one year. Walk out from the nest mound and find food: sugar cubes, seeds, leaves,
 dead insects. Press **Mark** next to a find and walk home; the path you walk becomes a
