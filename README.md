@@ -12,7 +12,7 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-07 (59eef80)
+- **Build:** 2026-10-07 (6bdfb47)
 
 ## What you can do right now
 
@@ -55,7 +55,7 @@ and the pad will be picked up.
 
 ## Licence
 
-The design documents in  are licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The design documents in `docs/` are licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 The game build is free to play here and on itch.io and may not be redistributed. Third-party
-sound is CC0 and credited in the game's credits panel and in 's attribution. The
+sound is CC0 and credited in the game's credits panel and in `docs/`'s attribution. The
 source code is not published.
