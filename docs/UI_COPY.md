@@ -820,6 +820,7 @@ learns to tell goal toasts from event toasts by their first words. Cost to chang
 | key | text | when shown | max |
 |---|---|---|---|
 | `hud.find.distance` | Body lengths: {n} | Small label under a find's name, in view and within `SenseRadius`: distance from the player in units, rounded | 16 |
+| `hud.nest.marker` | Nest | The nest marker, more than `NestMarkerMinDistance` from the nest and not at it: over the mound when it is in view, else beside `hud.find.distance` under an edge chevron in the HUD's text colour. Hidden while a panel or card is up | 8 |
 | `toast.scent.sugar_cube` | A sugar cube nearby. You can smell it from here. | `ItemSpawned` within the scent range, sugar cube | 60 |
 | `toast.scent.seed` | A seed nearby. You can smell it from here. | Same, seed | 60 |
 | `toast.scent.leaf` | A leaf nearby. You can smell it from here. | Same, leaf | 60 |
@@ -832,6 +833,11 @@ same words teach that the sense is a thing you have, not a lucky find.
 
 `toast.scent.pinecone` holds at every tier: at Mature it is a reminder, below it a promise. It
 needs no gated twin.
+
+**Assumed** — the nest marker shows from 12 units (`NestMarkerMinDistance`, twelve body lengths)
+out; inside that it is hidden, because the mound is 17 units across and the player is on or beside
+it, where a marker would only cover it. It stays up while a trail is laid, since a trail is walked
+toward the nest, though the find indicators step back then. Cost to change: one constant.
 
 **Assumed** — the gated insect is "too big for a young colony", which is the player's sense of
 it. The rule is a processing chamber and 25 workers, which the find's own prompt and the nest
