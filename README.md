@@ -12,7 +12,7 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-07 (073ec7b)
+- **Build:** 2026-10-07 (de13720)
 
 ## What you can do right now
 

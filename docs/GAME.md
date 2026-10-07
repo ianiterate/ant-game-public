@@ -45,6 +45,12 @@ Walking is on the **ground and gentle slopes** — leaves and stones lying on th
 walkable; vertical surfaces are not, and they stay that way: the garden is read from the
 ground, and a wall is a wall.
 
+An ant that walks into a low ledge climbs it: you get out of holes (the nest shaft) and
+over anything up to about an ant-length tall. Taller than that is a wall. Grass stems are
+never climbed. **Assumed** — the limit is 1.2 units above the ant's feet. Cheap to change
+(one tuning value), but it decides which pebbles and stones are routes and which are
+walls, so the level layout leans on it.
+
 ## The colony
 
 The colony is counts, not characters: idle workers, nurses, diggers, brood, food. Workers
