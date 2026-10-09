@@ -12,7 +12,7 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-07 (f4ffd72)
+- **Build:** 2026-10-09 (3eb3e1b)
 
 ## What you can do right now
 
@@ -26,7 +26,7 @@ You have one year. Walk out from the nest mound and find food: sugar cubes, seed
 dead insects. Press **Mark** next to a find and walk home; the path you walk becomes a
 pheromone trail, idle workers follow it out, and when enough of them are there the party
 carries the find back. **Tap** at the nest sends a few workers down your trail, or out in the
-field calls nearby workers off their job onto yours; **Interact** opens the nest: a cutaway where you dig brood, store and processing
+field calls nearby workers off their job onto yours; **Interact** opens the nest: a living cutaway where you watch the queen lay, nurses tend the brood, stores pile up and diggers work, and where you dig brood, store and processing
 chambers with the food you bring in. The queen lays while there is food, brood becomes
 workers in a week, and the colony's tier rises with its size and chambers.
 

@@ -82,9 +82,16 @@ under-nursed brood dies. Cheap in code; it decides how many idle workers the ear
 The nest is managed from a **cutaway panel**, not walked through. Stand at the entrance and
 the colony opens as a side-on view of its chambers drawn on the mound: brood, stores,
 processing, and the slots where the next chamber can be dug. Building is a choice there,
-paid in food and worker-time; the digging happens off screen as counts. You never lose the
+paid in food and worker-time; the digging is simulated as counts, and the cutaway shows the crew at work. You never lose the
 third-person view or pick up a cursor. Walkable tunnels, if they ever come, are presentation
 only — a space for story, not a second way to manage the colony.
+
+The cutaway is being made into a living view of the nest. The queen lays, brood grows from egg
+to larva to pupa and hatches, nurses tend it, store heaps rise and fall with the food, and diggers
+open new chambers. Raids, winter and hunger show too, so the colony's state reads at a glance.
+It only shows the colony; it changes no rule. **Assumed** — a small 3D diorama inside the panel,
+built in stages starting with the queen, brood, stores and digging. The design is in
+[NEST_VIEW.md](NEST_VIEW.md).
 
 There are three chambers:
 
@@ -357,4 +364,6 @@ leaves at once, and one dead insect at the start. From the Purpose section: the 
 the summer half-way mark; the antennae range, markers and scent toast. From [SIM_M3.md](SIM_M3.md): the player ant
 respawns and the queen cannot die; the weather and threat numbers; spiders defended by marking;
 the alarm on Interact; automatic nest defence; re-walking a trail renews it; a separate random
-stream for weather and threats; colonies saved before M3 continue with fresh weather and threats.
+stream for weather and threats; colonies saved before M3 continue with fresh weather and threats. From
+[NEST_VIEW.md](NEST_VIEW.md): the living cutaway as a 3D diorama in the panel; capped ant bodies;
+processing shown as presentation only (food is stored on delivery); no nest-view state in the save.

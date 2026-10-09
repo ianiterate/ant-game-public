@@ -4,8 +4,8 @@ Every string the player reads. The sections from *Names* to *First-run hints* ar
 vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, the year and saves, and
 [M3 — weather and threats](#m3--weather-and-threats) adds weather, spiders, birds, raids and the
 player ant's death, and [M5 — Purpose](#m5--purpose) adds the opening card, the winter bar,
-the season goals and the antennae sense, and [Touch](#touch) adds the on-screen buttons of
-phones and tablets. Code references the **key**; the
+the season goals and the antennae sense, [Touch](#touch) adds the on-screen buttons of
+phones and tablets, and [Nest view](#nest-view) adds the labels of the animated cutaway. Code references the **key**; the
 text here is the source for the string table. The rules behind each line are in
 [GAME.md](GAME.md) and [SIM.md](SIM.md). This file only puts them into words.
 
@@ -895,6 +895,47 @@ each; Sprint and Menu are the device's button names, so `InputGlyphs` follows th
 **Assumed** — Run is a latch rather than a button held down, because a thumb cannot hold it
 and steer the camera at once. It turns itself off half a second after the joystick is let go.
 Cost to change: cheap, one behaviour in the overlay.
+
+---
+
+## Nest view
+
+Short labels pinned beside the animated cutaway: on the queen, a brood cluster, a store pile, the
+cutting room, the shaft. What the view shows and why is in [NEST_VIEW_THEME.md](NEST_VIEW_THEME.md);
+which counts drive it is in [NEST_VIEW.md](NEST_VIEW.md). Voice and format are as above, and none of
+these take a parameter: the numbers stay in the panel lines.
+
+The normal state has no label. An egg being laid says "laying" on its own; a label appears only
+where something is wrong or about to change, so a label always means *look here*. Each one names
+what the player can see, not what to do about it: the panel lines (`nest.queen.full`,
+`nest.nurses.short`, …) carry the instruction.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `nestview.queen.blocked` | No room for her eggs | Beside the queen while `QueenBlocked` | 24 |
+| `nestview.queen.still` | Not laying | Beside the queen while `EggsPerDay == 0` and not `QueenBlocked` (no food, or winter) | 16 |
+| `nestview.brood.hatching` | Hatching at midnight | Over the oldest brood cluster while `BroodHatchIn[0] > 0` | 24 |
+| `nestview.brood.untended` | Too few nurses | Over the brood clusters while `Nursing < NurseDemand` | 20 |
+| `nestview.store.full` | Full to the door | Over a store pile drawn at its chamber's room ([NEST_VIEW.md](NEST_VIEW.md) splits the food between piles) | 20 |
+| `nestview.store.spilled` | Lost at the door | At a store doorway for a few seconds after a delivery that did not fit | 20 |
+| `nestview.store.starving` | Starving | Over the store chambers while `Food == 0` | 12 |
+| `nestview.processing.cutting` | Cutting up a dead insect | In the processing chamber while a delivered dead insect is being taken apart | 32 |
+| `nestview.winter.huddle` | Huddled against the cold | Over the queen's chamber in winter | 32 |
+| `nestview.winter.gaps` | Gaps in the thatch | At the entrance in autumn and winter while `Shelter < ShelterMax` | 24 |
+| `nestview.raid.defenders` | Defenders at the entrance | At the top of the shaft while `Raid.Phase == Fighting` | 32 |
+| `nestview.raid.looting` | Raiders in the stores | Over the store chambers while `Raid.Phase == Looting` | 28 |
+
+"Full to the door" and "Lost at the door" pick up `chamber.store.desc` ("What will not fit is lost at
+the door"), so the player meets the same picture in the build option and in the nest.
+
+**Assumed** — labels mark exceptions only, and there is no label for the queen laying, a dig, or the
+landing. Cost to change: cheap, one string per state added.
+
+**Assumed** — "Cutting up a dead insect" names what processing is (the cutting room, in
+NEST_VIEW_THEME.md). It is the only string that says so. Cost to change: one string.
+
+**Assumed** — `nestview.store.spilled` needs the view to know a delivery overflowed. If the sim does
+not report the food lost at the door, the label is left out until it does. Cost: one event field.
 
 ---
 
