@@ -129,13 +129,14 @@ workers climbing it overlap the soil beside it.
 **Assumed** — trunks narrowed to fit the gutters rather than drawn across the cards' edges. Cheap:
 one rule in `NestGeometry`; widening the gutters in `NestPanel.uss` widens the trunks with them.
 
-A strip of the surface shows above the cut: the ground line sits one unit (32 px) below the frame's
-top (`groundDrop` on `NestDiorama`), so the shaft's mouth and the spoil heap of an active dig are in
-the picture. The heap grows with the pellets carried up during a dig and starts again with the
+A strip of the surface shows above the cut: the ground line sits 2.5 units (80 px) below the frame's
+top (`groundDrop` on `NestDiorama`), but never below the top of a card, so the shaft's mouth, the
+mound with its thatch and the spoil heap of an active dig are in the picture. On desktop the top row
+of cards holds it to about 2.1 units; on compact to about 1. The heap grows with the pellets carried up during a dig and starts again with the
 next one.
 
-**Assumed** — the visible surface strip and spoil heap. The theme had pellets dropped out of the top
-of the frame. Cheap: `groundDrop` 0 puts the ground back on the frame's edge.
+**Assumed** — the visible surface strip, mound and spoil heap. The theme had pellets dropped out of
+the top of the frame. Cheap: `groundDrop` 0 puts the ground back on the frame's edge.
 
 **Assumed** — the 18° downward tilt, for the same reason. Cheap: one value on `NestDiorama`, 0
 returns to a straight side-on cut. Past about 30° the cut stops reading as a cross-section and the
@@ -182,8 +183,9 @@ Posts:
 - **Slot pockets**: dug rooms only (brood, store, processing) and the active dig, whose stub grows
   out from the trunk. Undug and locked slots are solid soil: nothing is drawn for them, and their
   cards alone mark them.
-- **Midden**: a dead-end pocket off the shaft near the surface, for husks, shell plates and the
-  dead (§2.3).
+- **Midden**: a dead-end gallery running left off the shaft just above the landing's roof, as low
+  in the queen's column as it goes so it stays clear of her caption plate, for husks, shell plates
+  and the dead (§2.3).
 
 ### 2.2 Who is drawn — the body allocation
 
@@ -195,8 +197,8 @@ filled in this priority each snapshot:
 |---|---|---|
 | Diggers | `Crew` of the build task | 4 |
 | Queen's attendants | `min(Nursing, QueenNurses + 2)` | 3 |
-| Nurses | `ceil(nurses in a chamber / 2)` per brood-holding chamber; nurses are spread by that chamber's share of the brood | 8 |
-| Processing | 3 while a carcass is being cut (§2.3); otherwise 2 scraping the floor, from `Idle` | 3 |
+| Nurses | `ceil(Nursing × 0.75)` in total (cap 8), at least 2 per brood-holding room as far as that goes, at most 6 a room, spread by each room's share of the brood; one nurse on the move per room at a time. **Assumed** — nurse bodies are drawn on top of the attendants, so Nursing 6 shows 8 bodies; readability beat "one body is one ant" here. Cheap to change (one line in `ComputeDesired`). | 8 |
+| Cutters | `CarcassCrew(i)` at each carcass being cut, one at each end ([SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md) §9.3); in a processing room with no carcass, 2 scraping the floor, taken from `Idle` while at least 2 are idle | 4 |
 | Shaft traffic | one body per `AntLeftNest` / `AntReturned` / delivery carrier, played over 3 s | 4 |
 | Idle, waiting on the landing | `Idle` minus the processing bodies drawn from idle | 12 |
 | Raiders (raids only) | `min(Raiders, 6)` | 6 |
@@ -228,7 +230,7 @@ ScriptableObject.
 | **Under-nursed** | `NurseCoverage01 < 1` | Clusters with no nurse near them lie untouched and dull: desaturated by `1 − coverage`. | — | On a `BroodLost` delta (cause 1): a nurse carries a still larva up to the midden. | Dull brood beside cream brood. |
 | **Stores** | `Food`, `FoodCapacity`, split per store | One pile per store pocket, and a few grains in the queen's chamber for the base room, filled by each chamber's share (base first). The top layer shows the kinds most recently delivered (§4.2): sugar grains, seed pebbles, leaf squares, insect pieces. Height smoothed with τ = 1 s. | — | `ItemDelivered`: carriers come down the shaft, tip their load on the first pile with room, and the top slumps. | Pile height is the biggest signal on the screen; it reads at 60 px. |
 | **Stores full / lost** | `Fill01 ≥ 0.98`; `StoresFull` (A = lost) | Full: the pile reaches the doorway, and carriers stand in the tunnel holding loads. Lost: grains proportional to `A` (≤ 20 instanced pieces) spill out of the door and down the tunnel floor, where they are left, fading over one game day. | — | 2 s spill | The spill is the moment; the toast says how much. |
-| **Processing** | `ProcessingJobs` (§4.2) | The cutting room (settled below). When a dead insect is delivered it is dragged in whole, on its back, and cut at the joints over 90 s in four steps: legs, head, shell pried off, soft parts portioned. Up to 3 workers; pieces are carried to the stores, and shell plates go to the midden. Between insects the room is swept and empty, with two workers scraping the floor if any are idle. | Scraping | Carcass dragged in; each cut step; pieces carried out | A carcass on its back in the chamber is unmistakable. |
+| **Processing** | `Carcass[]`, `Processing` (SIM_M4_PROCESSING.md §9) | The cutting room (below). When a dead insect is delivered it is dragged in whole and lies on its back, drawn at the stage its cuts have reached (`Carcass_Stage0..3`: whole, legs off, head off, shell pried). The one being cut lies toward the back of its room with its cutters at its ends; those waiting lie just inside the first cutting room's door, oldest nearest it, dimmed (on the landing's far end when there is no cutting room). One going off (`DaysLeft < 0.5`) is dimmed too. Between insects the room is empty, with two workers scraping the floor if any are idle. | `Cut` at the carcass, `Dig` scraping | `ItemDelivered` (raw): its carrier drags it to the door. `CarcassCut`: a cutter carries a piece to the first pile with room and comes back; on the last cut a cutter also carries the shell plates to the midden. `CarcassRotted` 1: it sinks away where it lay and its remains are carried to the midden; 2 (room full): it is carried straight there from the shaft. | A carcass on its back in the chamber is unmistakable. |
 | **Digging** | Build `Slot`, `Kind`, `Progress01`, `Crew`, `SecondsLeft` | A rough stub with a crumbling face, its floor darker and damper than finished rooms. The cavity grows outward from the tunnel mouth: a shader clips the pocket beyond radius `Progress01`. The crew scrape at the face, roll pellets, climb the shaft and drop them over the rim. | `Dig` loop, a pellet trip every 5–8 s | `BuildStarted`: the crew walk in from the landing. `ChamberBuilt`: a dust fall, the crew return to the landing, the room gets its kind's dressing. `BuildCancelled`: the crew walk out and the stub crumbles shut over 1 s. | A growing hole with four ants in it. `Crew == 0`: the face is still and a pellet lies where it was dropped — "waiting for workers". |
 | **Empty / locked slots** | `UnlockedSlots`, `SlotUnlockTier` | Solid soil, nothing drawn: the card alone marks them (a faint hairline and "Room to dig" when unlocked, a faint caption when locked). | — | — | Only dug rooms and the dig are holes. |
 | **Tier** | `Tier`; `TierChanged` | Shown as the nest's extent: the slots a tier opens change from dense to ordinary soil, and the mound at the top of the frame is a crater rim (Young), a low mound (Established) or a tall mound (Mature). | — | `TierChanged`: soil falls and the newly opened slots lighten over 2 s (darken on a drop). | The mound height reads; the tier label stays. |
@@ -236,24 +238,60 @@ ScriptableObject.
 | **Low food** | `FoodDaysLeft < 2` | Low piles (already true), and the queen's breathing slows with her rate. | — | — | Carried by the piles. |
 | **Shelter** | `Shelter`, `ShelterMax` | Pinecone scales layered over the entrance, one per shelter point. In winter the frost line stops at them (see Winter). | — | `ItemDelivered` of a pinecone: a scale drops into place. | Visible all year. |
 | **Raid alarm** | `Raid.Phase == Marching` | The landing packs tight below the entrance, every head towards the top. Nurses stay with the brood. | Agitated | `ThreatSpawned` (raid): bodies hurry at 1.5× | Everyone at the top of the frame. |
-| **Raid fight** | `Raid.Phase == Fighting`, `Raiders`, `InNest`, `PlayerAtNest` | Defenders jam the shaft mouth, grappling `min(Raiders, 6)` red-brown raiders in the entrance. While `PlayerAtNest`, one defender is your ant, picked out by its cool rim. | `Spar` | On a raid `AntsLost` delta: a defender goes down (carried out later). Each `RaidersLost` step: a raider body backs out. | One scrum at the entrance; the HUD gives the counts. |
+| **Raid fight** | `Raid.Phase == Fighting`, `Raiders`, `InNest`, `PlayerAtNest` | Defenders meet `min(Raiders, 6)` red-brown raiders at the foot of the shaft, one pair each, grappling face to face. While `PlayerAtNest`, one defender is your ant, picked out by its cool rim. | `Spar` | On a raid `AntsLost` delta: a defender goes down (carried out later). Each `RaidersLost` step: a raider body backs out. | One scrum at the entrance; the HUD gives the counts. |
 | **Breach** | `Raid.Phase == Looting` | Raiders pour down the shaft to the store nearest it and carry pieces back up and out. The piles drop with `Food`. Nurses close over the brood; the queen and brood are never touched. | Looting trips | `RaidBreached`: they pour in. `RaidLootingEnded` / `RaidRepulsed`: raiders leave up the shaft, the dead are dragged to the midden. | Red-brown ants inside the stores. |
-| **Midden** | Deaths and brood losses in the last 2 game days; shell plates from processing | A heap of husks, plates and curled bodies, sized by recent losses, decaying over 2 game days. | — | Carry-outs (above) | A growing heap says "we are losing ants". |
+| **Midden** | `CarcassesCut` + `CarcassesRotted` since the panel opened; the dead carried out | A few husks always, plus a shell-plates piece for every carcass cut or rotted since the panel opened (at most 12), piled along the floor from the dead end; the dead lie on it on their backs (at most 4, the oldest gone past that). | — | Carry-outs (above) | A growing heap says "we are losing ants". |
 | **Winter** | `Season == Winter`; `Shelter` | The section desaturates 25%. A pale frost line creeps down the cut face from the surface; it reaches `1 − Shelter / ShelterMax` of the way to the queen's chamber, and at full thatch stops at the scales. The landing empties: everyone packs into the queen's chamber around her. Animation at 0.6×. | `Huddle`, a slow shift at the edges | `SeasonChanged` to winter: frost creeps down over 5 s, and the bodies walk to the queen. | The cold palette, the frost depth and the dark mass read at once. |
 | **Night** | `TimeOfDay01`, `IsNight` | By day a warm wedge of light comes down the shaft and the upper rooms sit in it. At night the wedge turns low and blue-grey and the section drops a stop (`_NestKeyColor`, `_NestExposure`, from the theme's day and night keys, on the solar curve `DayNightLighting` uses). The work goes on; the landing settles. | Landing ants fold their legs at night and shuffle by day | — | The light in the shaft is the clock. |
 | **Rain** | `Raining` | The shaft mouth is dark and wet, with drips running down. The recall shows as shaft traffic coming in (`AntReturned`). | Drips | `WeatherChanged` to rain: traffic coming in | A wet shaft mouth. |
 | **Ants outside** | `AntsOutside`; `AntLeftNest`, `AntReturned` | Shaft traffic: bodies climbing out and coming in. The only sign of the trails underground. | — | per event | Movement in the shaft means work is going on. |
 
-**Assumed — what processing means** (with [NEST_VIEW_THEME.md](NEST_VIEW_THEME.md)). The
-processing chamber is the cutting room: a dead insect is too big to store whole and rots where it
-lies, so it is taken apart there into pieces that keep. That is why it gates dead insects and
-nothing else; seeds, leaves and sugar come in store-sized. In the simulation the food is stored the
-moment it is delivered, as today, and the chamber is only a requirement for tier 2. The cutting is
-shown after the fact and delays nothing. Cost to change: if you want processing to be a real
-throughput step (an insect stored raw and turned into food over time), that is a Sim change. It
-needs a raw-food count, a cutting rate per chamber, a save version bump, and the insect economy in
-SIM_M2.md §14 redone: about two days. The view would then read the real backlog instead of the
-event recorder, a small change on the view side.
+**Assumed** — where NV2 and NV3 as built differ from the rows above. Each is cheap to change
+(presentation only, in `NestDiorama`, `NestBodyPool` or `NestCast`):
+
+- *Raid fight at the shaft foot, not its mouth.* Raiders come down the shaft and grapple defenders
+  in pairs on the landing; the mouth is a narrow crack at the top of the frame with no floor to
+  stand a scrum on. During the alarm the landing packs toward the shaft foot, facing it, rather
+  than every head turned up.
+- *Defenders come from the idle workers*, one per raider shown; the dead are counted from
+  `WorkersKilled` deltas while a raid is on (`AntsLost` is not read for this). A body killed lies on
+  its back where it fell and is carried out only once the fight and the looting are over.
+- *The midden's heap counts from the panel opening*, not over the last 2 game days: cut and rotted
+  carcasses since then, plus husks that are always there. Bearers drag the dead up the shaft into
+  it and they stay (4 at most). Starved workers are carried out the same way, one per
+  `WorkersStarved` delta. Brood losses are not carried out yet.
+- *Looting raiders go to the store with food nearest the shaft foot*, else to the queen's base
+  larder past her head, and carry pieces up and out until the looting ends. Nurses stay where
+  they are; they do not close over the brood.
+- *Dull brood is a share, not the clusters furthest from a nurse.* `1 − NurseCoverage01` of each
+  room's brood (plus 0.3 while starving) is drawn dull, picked by a fixed sequence so the dull
+  items only grow as the share does. Under-nursed nurses also walk slower, down to 0.6×.
+- *Starving*: idle workers and attendants rest in `Starve`, everyone walks at 0.6×, gasters narrow
+  to 0.85 across. They do not stall mid-step.
+- *Winter*: the key light takes `DayNightLighting`'s season tint and is desaturated a further 50%
+  on top of the section's 25%. Shaft traffic stops both ways; only huddled bodies animate at 0.6×.
+  The frost is `Frost_Band` over the cut face, reaching `1 − thatch / 4` of the way down to the
+  queen's chamber.
+- *Shelter is drawn in quarters*: thatch is `round(4 · Shelter / ShelterMax)` scales (one per
+  point at `ShelterMax` 4), laid on the mound either side of the mouth.
+- *Tier*: the mound is the spoil heap at three sizes and settles to a new tier's size in about two
+  seconds. The newly opened slots' soil does not lighten yet.
+- *Rain*: ants stop going out (the recall still comes in), the cut face darkens with the garden's
+  `_AntWetness`, most near the surface, and up to six drips fall from the mouth.
+
+**What processing means** (with [NEST_VIEW_THEME.md](NEST_VIEW_THEME.md)). The processing
+chamber is the cutting room: a dead insect is too big to store whole and rots where it lies, so it
+is taken apart there into pieces that keep. That is why it gates dead insects and nothing else;
+seeds, leaves and sugar come in store-sized. Processing is a real step in the simulation: a
+delivered insect waits in the chamber as a carcass, two cutters drawn from idle cut it in four
+steps over half a day, each step puts a quarter of its food into the stores, and one left uncut
+for two days rots. The view draws the carcasses the simulation holds, at the stage they are at,
+from [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md) §9's read API (the rows above and in §2.2, §4).
+
+**Assumed** — the cutting room's layout: the carcass at 0.6 of the kit's size (1.8 worker lengths),
+the one being cut toward the back of its room and the waiting ones at the first cutting room's
+door, overlapping in depth; with no cutting room they wait on the landing. Every cut sends a piece
+to the stores, not only the last. Cheap: `carcassScale` and `NestGeometry.CarcassSpot`.
 
 **Assumed** — the midden, the mound by tier, the night rhythm of the landing, and frost depth as the
 shelter readout. Pure presentation; none is a rule of the colony. Cheap to change.
@@ -312,8 +350,8 @@ uses), and an **activity recorder** fed by `SimRunner.SimEventRaised`. Between s
 continuous values are smoothed (τ 0.3–1 s) and progress values are extrapolated with
 `SimRunner.Alpha`.
 
-**No Sim changes.** Everything below is on the existing read API (SIM_M2.md §12.1, SIM_M3.md
-§14.1) or is a public `ColonyState`/`RaidState` field. `World.Items[e.A].Kind` is still valid in
+**No Sim changes beyond processing.** Everything below is on the existing read API (SIM_M2.md §12.1,
+SIM_M3.md §14.1, SIM_M4_PROCESSING.md §7) or is a public `ColonyState`/`RaidState` field. `World.Items[e.A].Kind` is still valid in
 the event drain for `ItemDelivered`, because a delivered item's slot is freed only at the start of
 the next `ItemSystem` step. Nothing is saved: the recorder starts empty on load.
 
@@ -334,7 +372,9 @@ the next `ItemSystem` step. Nothing is saved: the recorder starts empty on load.
 | `Shelter`, `ShelterMax` | `Colony.Shelter`, `Config.ShelterMax` | |
 | `Raining` | `Raining` | |
 | `RaidPhase`, `Raiders`, `StartRaiders`, `PlayerAtNest` | `Raid`, `PlayerAtNest` | |
-| Counter deltas: `EggsLaid`, `WorkersRaised`, `BroodLost`, `WorkersStarved`, `WorkersKilled` | `World.Stats`, minus the previous snapshot's | The baseline is reset on open, so deltas never replay what happened while the panel was closed. Monotonic counters survive a missed tick, where per-tick flags would not. |
+| `Processing`, `ProcessingDemand`, `RawFood`, `StepTicks` | `Colony.Processing`, `ProcessingDemand`, `RawFood`, `StepTicks` | |
+| `CarcassCount`, `Carcasses[4]`: `Value`, `ChamberSlot`, `Step`, `Step01`, `Cut01`, `Crew`, `DaysLeft`, `DeliveredTick` | `Carcasses[i]`, `CutStep`, `CutStep01`, `Cut01`, `CarcassCrew`, `CarcassDaysLeft` | Oldest first. `ChamberSlot −1`: waiting by the door |
+| Counter deltas: `EggsLaid`, `WorkersRaised`, `BroodLost`, `WorkersStarved`, `WorkersKilled`, `CarcassesCut`, `CarcassesRotted` | `World.Stats`, minus the previous snapshot's | The baseline is reset on open, so deltas never replay what happened while the panel was closed. Monotonic counters survive a missed tick, where per-tick flags would not. |
 
 `QueenNurses`, `BroodMaturationDays` and `ShelterMax` are read once from `World.Config` on open
 and when the world is replaced.
@@ -346,20 +386,22 @@ because the player usually opens the panel just after a haul arrives. It keeps:
 
 | Kept | From | Used for |
 |---|---|---|
-| The last 8 deliveries: kind, food stored, tick | `ItemDelivered` (kind via `World.Items[A].Kind`) | Carriers coming in; the colour of the stores' top layer; pinecone thatch drops |
-| Processing jobs (≤ 4): start tick | `ItemDelivered` of a dead insect (90 s each, one after another) | §2.3 processing |
+| The last 8 deliveries: kind, food stored, tick, raw | `ItemDelivered` (kind via `World.Items[A].Kind`, raw via its def) | The colour of the stores' top layer; pinecone thatch drops |
+| Carriers owed: up to 4 deliveries, oldest dropped | `ItemDelivered`, except a raw one the cutting room had no room for (B = 0) | A carrier down the shaft per delivery, with its own kind: to the first pile with room, or a dead insect dragged to the cutting room's door |
+| Cuts owed: slot, step, up to 4 | `CarcassCut` | A piece carried from the carcass to the stores; shell plates to the midden on step 4. The carcasses themselves come from the snapshot (SIM_M4_PROCESSING.md §9.2) |
+| Rots owed: cause, up to 4 | `CarcassRotted` | Cause 1: the carcass sinks away and its remains are carried out; 2: carried from the shaft to the midden |
 | Last spill: amount, tick | `StoresFull` | The spill |
 | Shaft traffic owed: out, in | `AntLeftNest`, `AntReturned` | Up to 4 bodies, played over 3 s; the rest dropped |
 | Per-slot build moments | `BuildStarted`, `BuildCancelled`, `ChamberBuilt` | Crew arriving, the dust puff, refilling |
 | Tier moment | `TierChanged` | Outlines fade in or out |
 | Raid moments | `ThreatSpawned` (raid), `RaidContact`, `RaidBreached`, `RaidRepulsed`, `RaidLootingEnded`, `AntsLost` (cause raid) | §2.3 raid rows |
-| Losses for the midden | `BroodLost`, `WorkersStarved`, `AntsLost` (cause raid), finished processing jobs, with ticks | The midden size over 2 game days |
+| Losses | `BroodLost`, `WorkersStarved`, `AntsLost` (cause raid), `CarcassCut` B = 4 (shell), `CarcassRotted` (rot), with ticks | Kept for labels; the midden's heap reads the snapshot's `…SinceOpen` counters |
 
-Moments from before the panel opened are shown as their end state, not played. A processing
-job still running when the panel opens is shown part-way through.
+Moments from before the panel opened are shown as their end state, not played. A carcass
+part-cut when the panel opens is drawn at its stage, from the snapshot.
 
-**Assumed** — the recorder does not survive a save and load: after loading, processing is idle,
-the midden is empty and the top layer of the stores is a neutral mix. Cheap. Keeping these would
+**Assumed** — the recorder does not survive a save and load: after loading, the carcasses are
+where the save has them (they are simulation state), but the midden is empty and the top layer of the stores is a neutral mix. Cheap. Keeping these would
 mean presentation fields in the save, which this design avoids on purpose.
 
 ---
@@ -393,9 +435,8 @@ additive rows on the same machinery.
 - **Reading bodies as counts.** The landing shows 12 ants when 140 are idle. Mitigation: the
   captions carry the numbers, and a full landing means "plenty". A player who counts ants will be
   wrong. That is accepted.
-- **Lag that looks like a rule.** Heaps smooth over 1 s, egg carries take 3 s, and the carcass sits
-  for 90 s. Processing in particular looks like a delay that does not exist (§2.3 Assumed). If
-  players read it as "my food is not in yet", shorten it or make processing real.
+- **Lag that looks like a rule.** Heaps smooth over 1 s and egg carries take 3 s. Processing is
+  a real delay now (half a day a carcass), so the cutting room shows a rule, not a lag.
 - **Layout drift.** Chamber positions come from the cards' rects, so a USS change cannot misplace
   a chamber. A tunnel graph that no longer fits a rearranged layout can still look wrong. Check
   screenshots of both layouts after any change to `NestPanel.uss`.

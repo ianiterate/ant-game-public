@@ -5,7 +5,7 @@ vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, th
 [M3 — weather and threats](#m3--weather-and-threats) adds weather, spiders, birds, raids and the
 player ant's death, and [M5 — Purpose](#m5--purpose) adds the opening card, the winter bar,
 the season goals and the antennae sense, [Touch](#touch) adds the on-screen buttons of
-phones and tablets, and [Nest view](#nest-view) adds the labels of the animated cutaway. Code references the **key**; the
+phones and tablets, and [Nest view](#nest-view) adds the labels of the animated cutaway, and [Processing](#processing) adds the cutting of dead insects. Code references the **key**; the
 text here is the source for the string table. The rules behind each line are in
 [GAME.md](GAME.md) and [SIM.md](SIM.md). This file only puts them into words.
 
@@ -59,7 +59,7 @@ If tier comes to depend on chambers (M2), the names still read correctly.
 |---|---|---|---|
 | `hud.workers` | Workers | Always; value `Population` | 12 |
 | `hud.idle` | Idle | Always; value `Colony.Idle` | 12 |
-| `hud.out` | On trails | Always; value `AntsOutside`. With Idle, Nursing and Digging it sums to Workers | 12 |
+| `hud.out` | On trails | Always; value `AntsOutside`. With Idle, Nursing, Digging and Cutting it sums to Workers | 12 |
 | `hud.nursing` | Nursing | Always; value from `hud.nursing.value` (M2). Dimmed unless nurses are short | 12 |
 | `hud.food` | Food | Always; value from `hud.food.value` (M2) | 12 |
 | `hud.food.empty` | Empty | Replaces the food value while `Food == 0` | 12 |
@@ -254,7 +254,7 @@ The panel opens when the player is within `NestRadius` of the nest ([SIM_M2.md](
 | `nest.build.time` | Days to dig: {d} | On each build option, with a full crew | 20 |
 | `chamber.brood.desc` | The queen lays only while there is room for the brood. | Build option detail, when the option is selected | 60 |
 | `chamber.store.desc` | Holds more food. What will not fit is lost at the door. | Same | 60 |
-| `chamber.processing.desc` | Needed to become established, and so to take dead insects. | Same | 60 |
+| `chamber.processing.desc` | Cuts dead insects into food. Needed to become established. | Same. **Changed in Processing** | 60 |
 | `nest.why.busy` | One dig at a time | Build option disabled: `CanBuild == BuildInProgress` | 28 |
 | `nest.why.food` | Not enough food | `CanBuild == NotEnoughFood` | 28 |
 | `nest.why.idle` | No idle workers | `CanBuild == NothingToSend` | 28 |
@@ -265,7 +265,7 @@ The panel opens when the player is within `NestRadius` of the nest ([SIM_M2.md](
 | `nest.slot.waiting` | Waiting for idle workers | Digging slot, `Crew == 0`, in place of days left | 28 |
 | `chamber.brood.effect` | Brood room +{n} | Built brood slot: `def.BroodCapacity`, with its fill drawn as a bar | 24 |
 | `chamber.store.effect` | Food room +{n} | Built store slot: `def.FoodCapacity`, with its fill drawn as a bar | 24 |
-| `chamber.processing.effect` | Dead insects, once established | Built processing slot | 32 |
+| `chamber.processing.effect` | Cuts dead insects into food | Built processing slot with nothing to cut. While it cuts, the lines of [Processing](#processing) replace it. **Changed in Processing** | 32 |
 
 Locked slots that already hold a chamber (after the tier drops) are drawn as built. The chamber
 keeps working, so they need no extra line.
@@ -763,7 +763,7 @@ string placed by the layout. Goals are guidance, not gates.
 | `goal.spring.workers` | Grow the colony. Workers: {have}/{need} | `Population < TierThreshold(2)`: `Population`, `TierThreshold(2)` | 40 |
 | `goal.spring.workers.why` | Bigger finds need more workers to lift. | With the goal | 50 |
 | `goal.summer.insect` | Haul a dead insect home | `FindsHauled(DeadInsect) < 1`, colony established | 40 |
-| `goal.summer.insect.why` | No find in the garden holds more food. | With `goal.summer.insect` | 50 |
+| `goal.summer.insect.why` | Cut up in the nest, it feeds more than any find. | With `goal.summer.insect`. **Changed in Processing** | 50 |
 | `goal.summer.insect.processing` | Become established to take dead insects | In place of `goal.summer.insect` while `Colony.Tier < 2` | 40 |
 | `goal.summer.insect.processing.why` | The nest shows what is still missing. | With the processing line. The nest panel's next-tier list names the chamber and the workers | 50 |
 | `goal.summer.store` | Dig a second store chamber | `BuiltChambers.Store < 2` | 40 |
@@ -861,6 +861,80 @@ draws which are free. Cost to change: one parameter.
 
 ---
 
+## Processing
+
+The strings for the cutting room: a dead insect hauled home is cut up in the processing chamber
+before its food reaches the stores. The rules are in [GAME.md](GAME.md) ("The nest") and
+[SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md). Voice, format and parameter widths are as in M2.
+
+These keys change text and are listed in their own tables only: `chamber.processing.desc`,
+`chamber.processing.effect`, `goal.summer.insect.why`, and the "when shown" of
+`nestview.processing.cutting`.
+
+### Words
+
+| word | means | never |
+|---|---|---|
+| cut, cut up | What the processing chamber does to a dead insect | process, butcher, prepare |
+| to cut | Food in dead insects that are home but not yet cut (`RawFood`) | raw food, unprocessed |
+| rot | A dead insect left uncut too long, lost | decay, expire, spoil (the garden's word for a find going off before it is hauled) |
+
+**Assumed** — the player-facing word for raw food is "to cut", and for a carcass "a dead insect",
+as in the garden. "Raw" is the code's word only. Cost to change: the strings below.
+
+**Assumed** — the chamber keeps the name "Processing chamber" in every string; "the cutting room"
+stays the fiction's name and is not shown. Renaming the chamber is one name and five strings.
+
+### HUD additions
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `hud.cutting` | Cutting | Always; value `Colony.Processing`. Dimmed at 0. With Idle, On trails, Nursing and Digging it sums to Workers | 12 |
+| `hud.raw` | To cut | Under Food, once a processing chamber is built; value `floor(RawFood)`. Dimmed at 0 | 12 |
+
+### Nest panel
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `nest.raw` | Still to cut: {food} | Colony line, while `RawFood >= 1`: `floor(RawFood)` | 24 |
+| `nest.raw.rot` | Rots if not cut. Days left: {d} | Processing card line (first built chamber), while the oldest dead insect has under half a day left: `CarcassDaysLeft(0)`, one decimal place | 40 |
+| `nest.cut.short` | No idle workers free to cut. | Colony line, as a warning, while `Processing < ProcessingDemand` | 40 |
+| `nest.cut.progress` | Cutting: {pct}% | Built processing slot with a dead insect in it: `Cut01`, floored | 20 |
+| `nest.cut.crew` | Cutters: {crew}/{need} | Same: `CarcassCrew` / `ProcessingCrew` | 20 |
+| `nest.cut.waiting` | Waiting for idle workers | Same, `CarcassCrew == 0`, in place of `nest.cut.crew` | 28 |
+| `nest.cut.queue` | Next in line: {n} | First built processing slot, while dead insects wait for a free chamber: the count waiting | 20 |
+
+### Toasts — events
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `toast.item.delivered.raw` | Into the processing chamber. Food to come: {food} | `ItemDelivered` of a `Raw` find, `B > 0`, in place of `toast.item.delivered`; `food = B` | 60 |
+| `toast.carcass.cut` | A dead insect is cut up and in the stores. | `CarcassCut`, B = 4 | 60 |
+| `toast.carcass.rotted` | A dead insect rotted before it was cut. Food lost: {n} | `CarcassRotted`, B = 1 | 60 |
+| `toast.carcass.no_room` | The processing chamber is full. Food lost: {n} | `CarcassRotted`, B = 2, in place of `toast.item.delivered.raw` on the same tick | 60 |
+| `toast.cut.short` | No idle workers to cut the dead insect. It may rot. | No event. The Game layer raises it when `Processing < ProcessingDemand` has held for 30 s. Once per shortage | 60 |
+
+A cut step is silent: the HUD's food rises and the panel's percentage moves. Food that does not fit
+when a step is cut raises `toast.stores.full` as a delivery does.
+
+### The year's outcome — rot line
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `outcome.line.rotted` | Food rotted before it was cut: {food} | Under the threat lines on both cards, only while `floor(Stats.FoodRotted) >= 1` | 40 |
+
+### Nest view
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `nestview.processing.rotting` | Going off | Over a dead insect with under half a day before it rots | 16 |
+| `nestview.processing.nohands` | Nobody to cut it | Over a dead insect in a processing chamber with no cutters | 20 |
+
+Neither shows in the normal state: a dead insect waiting its turn by the door, or being cut, has no
+label but `nestview.processing.cutting`.
+
+---
+
 ## Touch
 
 Phones and tablets, in landscape. A left-thumb joystick moves, a drag on the right half of the
@@ -919,7 +993,7 @@ what the player can see, not what to do about it: the panel lines (`nest.queen.f
 | `nestview.store.full` | Full to the door | Over a store pile drawn at its chamber's room ([NEST_VIEW.md](NEST_VIEW.md) splits the food between piles) | 20 |
 | `nestview.store.spilled` | Lost at the door | At a store doorway for a few seconds after a delivery that did not fit | 20 |
 | `nestview.store.starving` | Starving | Over the store chambers while `Food == 0` | 12 |
-| `nestview.processing.cutting` | Cutting up a dead insect | In the processing chamber while a delivered dead insect is being taken apart | 32 |
+| `nestview.processing.cutting` | Cutting up a dead insect | In a processing chamber while a carcass is in it with cutters at work (`ChamberSlot >= 0`, `Crew > 0`, [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md) §9) | 32 |
 | `nestview.winter.huddle` | Huddled against the cold | Over the queen's chamber in winter | 32 |
 | `nestview.winter.gaps` | Gaps in the thatch | At the entrance in autumn and winter while `Shelter < ShelterMax` | 24 |
 | `nestview.raid.defenders` | Defenders at the entrance | At the top of the shaft while `Raid.Phase == Fighting` | 32 |

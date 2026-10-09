@@ -12,7 +12,7 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-09 (3eb3e1b)
+- **Build:** 2026-10-09 (fd475be)
 
 ## What you can do right now
 
@@ -28,7 +28,7 @@ pheromone trail, idle workers follow it out, and when enough of them are there t
 carries the find back. **Tap** at the nest sends a few workers down your trail, or out in the
 field calls nearby workers off their job onto yours; **Interact** opens the nest: a living cutaway where you watch the queen lay, nurses tend the brood, stores pile up and diggers work, and where you dig brood, store and processing
 chambers with the food you bring in. The queen lays while there is food, brood becomes
-workers in a week, and the colony's tier rises with its size and chambers.
+workers in a week, and the colony's tier rises with its size and chambers. Dead insects are cut up in the processing chamber before their food reaches the stores; winter, rain, hunger and raids all show in the cutaway.
 
 The garden fights back. Rain turns outbound workers home and washes trails out; walk a
 trail again to renew it. Spiders settle on busy trails and take workers: **Mark** the

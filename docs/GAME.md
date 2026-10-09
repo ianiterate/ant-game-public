@@ -30,7 +30,7 @@ simplified shapes, built for URP on WebGL.
    Out in the field, tapping redirects: a few nearby workers leave what they were doing and
    join your current trail.
 5. **Haul.** Once enough ants are at the find, the party carries it home. Food goes into
-   the colony's stores; the colony grows.
+   the colony's stores (a dead insect is cut up in the nest first); the colony grows.
 
 The first playable slice is exactly this loop with one sugar cube, done in under three
 minutes.
@@ -53,7 +53,7 @@ walls, so the level layout leans on it.
 
 ## The colony
 
-The colony is counts, not characters: idle workers, nurses, diggers, brood, food. Workers
+The colony is counts, not characters: idle workers, nurses, diggers, cutters, brood, food. Workers
 leave the nest only on a job (hauling or defending) and return to the idle pool
 afterwards. Every worker and every brood eats each day. The queen lays while the stores are
 healthy, up to what the brood chambers hold, and brood becomes workers after seven days.
@@ -68,7 +68,7 @@ about 10% of the workers in the nest per day. Cheap to change: numbers in `Asset
 **Colony tier**: Young below 25 workers. Established at 25 workers with a processing chamber.
 Mature at 75 with a processing chamber and two each of brood and store chambers. A tier is
 lost only when the colony falls 5 below its threshold. Bigger finds need a higher tier: a
-dead insect needs an Established colony: a processing chamber and 25 workers, not just hands. **Assumed** — the chamber requirements
+dead insect needs an Established colony: a processing chamber to cut it up and 25 workers, not just hands. **Assumed** — the chamber requirements
 and the margin of 5. Cheap to change.
 
 **Nursing**: the brood needs nurses, one for the queen plus one per five brood, and idle
@@ -76,6 +76,18 @@ workers fill that need before anything else. Trails never take nurses. A tap at 
 no idle worker is left can take nurses, down to half of what the brood needs. Brood left
 short-handed dies off until the nurses come back. **Assumed** — this rule, and how fast
 under-nursed brood dies. Cheap in code; it decides how many idle workers the early game has.
+
+**Processing**: a dead insect hauled home does not go straight into the stores. It is dragged into
+the processing chamber whole and cut up there at the joints, in four steps over half a day: legs,
+head, shell, soft parts. Two cutters per chamber do it, taken from idle workers once the nurses
+have what they need, and each step puts a quarter of the insect's food into the stores (what will
+not fit is lost at the door, as with any delivery). A chamber cuts one insect at a time; another
+waits its turn by the door. An insect not cut within two days of arriving rots, and what is left of
+it goes to the midden. Trails and taps never take cutters, raiders never take an uncut insect, and
+cutting goes on at night and through winter. Seeds, leaves and sugar come in store-sized and need
+no cutting. **Assumed** — dead insects only, two cutters, half a day, two days to rot. Cheap to
+change (data), except making seeds need husking too, which would put a processing chamber into the
+Young colony's opening.
 
 ## The nest
 
@@ -97,7 +109,8 @@ There are three chambers:
 
 - **Brood**, 30 food: room for 12 more brood.
 - **Store**, 20 food: room for 150 more food. Anything delivered beyond the room is lost.
-- **Processing**, 60 food: needed to become Established.
+- **Processing**, 60 food: the cutting room, where dead insects are cut up into food. Needed to
+  become Established.
 
 The panel is worked with the same inputs as walking: Move left and right picks a slot, Interact
 digs or confirms, Mark or Pause closes it. Nothing in the game needs a pointer. **Assumed** —
@@ -194,7 +207,7 @@ winter and from what the nest can hold, not from scarcity.
 | Sugar cube | 6 | 1 | 60 | The first slice's find. |
 | Seed | 2 | 1 | 15 | Common. |
 | Leaf | 4 | 1 | 10 | Low value, light; nest material later. |
-| Dead insect | 10 | 2 | 120 | Needs a processing chamber; spoils over three days. |
+| Dead insect | 10 | 2 | 120 | Needs a processing chamber; spoils over three days in the garden; cut up in the nest over half a day. |
 | Pinecone | 16 | 3 | — | Shelter, not food: each one hauled home thatches the nest against winter (up to four). |
 
 The player counts as one ant toward starting the haul, while standing within reach of the
@@ -264,7 +277,8 @@ Interact to raise the alarm: the workers scatter and none are taken, though the 
 of them the bigger your colony's tier, across the garden from its edge. When raiders are spotted,
 every worker on the way out turns home. The fight is at the nest, against every worker inside: a
 fuller nest beats a raid cheaply, and the defenders fight harder while you are there with them.
-Raiders loot the stores while they fight, and for a while longer if they break through. Every
+Raiders loot the stores while they fight, and for a while longer if they break through; a dead
+insect still waiting to be cut is too big for them to carry off. Every
 raider killed weakens the rival. No raids in rain or winter.
 
 Each threat is arithmetic against the colony's counts, not a boss fight. The queen and the brood
@@ -287,7 +301,8 @@ against a raid is automatic. Cheap to change; none of it decides what a tap away
 The full M1 rules — items, colony upkeep, trails, recruitment, hauling, tick order and
 tests — are specified in [SIM.md](SIM.md). Colony building — chambers, queen and brood, tier,
 finds that come and go, the year and its outcome, saves — is in [SIM_M2.md](SIM_M2.md). Weather,
-spiders, birds, raids and the player ant's death are in [SIM_M3.md](SIM_M3.md).
+spiders, birds, raids and the player ant's death are in [SIM_M3.md](SIM_M3.md). Cutting up dead
+insects in the processing chamber is in [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md).
 Everything the player reads is in [UI_COPY.md](UI_COPY.md).
 
 The simulation is headless: a fixed 10 Hz tick, one seed (driving one random stream for the
@@ -366,4 +381,7 @@ respawns and the queen cannot die; the weather and threat numbers; spiders defen
 the alarm on Interact; automatic nest defence; re-walking a trail renews it; a separate random
 stream for weather and threats; colonies saved before M3 continue with fresh weather and threats. From
 [NEST_VIEW.md](NEST_VIEW.md): the living cutaway as a 3D diorama in the panel; capped ant bodies;
-processing shown as presentation only (food is stored on delivery); no nest-view state in the save.
+no nest-view state in the save. From [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md): only dead insects
+need cutting; two cutters a chamber, half a day a carcass, rot after two days; cutters die after
+idle workers and are never taken by taps; uncut insects are never looted; the winter bar counts only
+food already in the stores; the dead-insect goal is met on delivery.
