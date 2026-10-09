@@ -259,7 +259,7 @@ ScriptableObject.
 - *The midden's heap counts from the panel opening*, not over the last 2 game days: cut and rotted
   carcasses since then, plus husks that are always there. Bearers drag the dead up the shaft into
   it and they stay (4 at most). Starved workers are carried out the same way, one per
-  `WorkersStarved` delta. Brood losses are not carried out yet.
+  `WorkersStarved` delta. Brood losses (either cause) are carried to the midden by a nurse, up to 3 owed at a time.
 - *Looting raiders go to the store with food nearest the shaft foot*, else to the queen's base
   larder past her head, and carry pieces up and out until the looting ends. Nurses stay where
   they are; they do not close over the brood.

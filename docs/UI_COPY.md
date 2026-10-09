@@ -282,11 +282,16 @@ keeps working, so they need no extra line.
 | `prompt.nest.tap.nurses` | [Tap] Send {n}. Nurses leave the brood. | Replaces `prompt.nest.tap` when the tap would take nurses: `n > Idle` (§2.5) | 40 |
 | `prompt.nest.open` | [Interact] Open the nest | HUD, second prompt line under the nest prompt: at the nest, the panel closed, the colony alive, no card up. A dead colony shows `outcome.new_colony` instead | 40 |
 | `nest.prompt.choose` | [Interact] Choose what to dig | Panel open, an empty unlocked slot is selected. Interact shows the build options | 40 |
-| `nest.prompt.close` | [Mark] Back to the garden | Panel open, the build options not showing. Mark (or Pause) closes the panel | 40 |
-| `nest.prompt.back` | [Mark] Back to the slots | The build options are showing. Mark hides them and returns to slot selection | 40 |
+| `nest.prompt.close` | [Mark] To the garden | Panel open, the build options not showing. Mark (or Pause) closes the panel | 40 |
+| `nest.prompt.back` | [Mark] To the slots | The build options are showing. Mark hides them and returns to slot selection | 40 |
 
 The two back-out lines name where Mark takes you: from the options to the slots, from the slots to
 the garden. Pause closes the panel too, but its glyph is not shown.
+
+**Assumed** — the back-out lines were "Back to the garden" and "Back to the slots". They lost
+"Back" because on touch `[Mark]` reads as the Back button's label ([Touch](#touch)), which would
+print "Back Back to the garden". With a key glyph they read as "[M] To the garden". Cost to
+change: two strings.
 
 **Assumed** — digging needs no confirmation, because a cancel refunds all of its food. Stopping a
 dig needs a second press, because it throws away the work. Cost to change: one string either way.
@@ -675,7 +680,7 @@ are `Assets/ThirdParty/ATTRIBUTION.md` as shipped with the build.
 | `credits.volume.sounds` | Sounds | Second row: `AudioVolumes.Sfx`; Music follows it | 12 |
 | `credits.volume.value` | {n}% | Each row's value, 0 to 100 in steps of 10 | 5 |
 | `credits.prompt.move` | Up and down to read. Left and right to set the sound. | Panel foot | 60 |
-| `credits.prompt.close` | [Mark] Back to the garden | Panel foot, under `credits.prompt.move` | 30 |
+| `credits.prompt.close` | [Mark] To the garden | Panel foot, under `credits.prompt.move` | 30 |
 | `credits.missing` | The credits are missing from this build. | In place of the credits when the build has no attribution text | 50 |
 
 **Assumed** — every line in this section. The title "Who made the garden" says the credits are
@@ -899,7 +904,11 @@ stays the fiction's name and is not shown. Renaming the chamber is one name and 
 | `nest.raw` | Still to cut: {food} | Colony line, while `RawFood >= 1`: `floor(RawFood)` | 24 |
 | `nest.raw.rot` | Rots if not cut. Days left: {d} | Processing card line (first built chamber), while the oldest dead insect has under half a day left: `CarcassDaysLeft(0)`, one decimal place | 40 |
 | `nest.cut.short` | No idle workers free to cut. | Colony line, as a warning, while `Processing < ProcessingDemand` | 40 |
-| `nest.cut.progress` | Cutting: {pct}% | Built processing slot with a dead insect in it: `Cut01`, floored | 20 |
+| `nest.cut.progress` | Cutting: {pct}% · {step} | Built processing slot with a dead insect in it: `Cut01`, floored; `step` is `nest.cut.step.{Step}` | 32 |
+| `nest.cut.step.0` | On its back | `{step}` while `CutStep == 0`: dragged in whole, the legs coming off | 14 |
+| `nest.cut.step.1` | Legs off | `CutStep == 1`: the head coming off | 14 |
+| `nest.cut.step.2` | Head off | `CutStep == 2`: the shell being pried off | 14 |
+| `nest.cut.step.3` | Shell pried | `CutStep == 3`: the soft parts carried to the stores | 14 |
 | `nest.cut.crew` | Cutters: {crew}/{need} | Same: `CarcassCrew` / `ProcessingCrew` | 20 |
 | `nest.cut.waiting` | Waiting for idle workers | Same, `CarcassCrew == 0`, in place of `nest.cut.crew` | 28 |
 | `nest.cut.queue` | Next in line: {n} | First built processing slot, while dead insects wait for a free chamber: the count waiting | 20 |
@@ -913,6 +922,16 @@ stays the fiction's name and is not shown. Renaming the chamber is one name and 
 | `toast.carcass.rotted` | A dead insect rotted before it was cut. Food lost: {n} | `CarcassRotted`, B = 1 | 60 |
 | `toast.carcass.no_room` | The processing chamber is full. Food lost: {n} | `CarcassRotted`, B = 2, in place of `toast.item.delivered.raw` on the same tick | 60 |
 | `toast.cut.short` | No idle workers to cut the dead insect. It may rot. | No event. The Game layer raises it when `Processing < ProcessingDemand` has held for 30 s. Once per shortage | 60 |
+
+The step names say what the dead insect looks like now, the stage the cutaway draws
+([SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md) §9.1), not the cut under way, so the card and the
+picture always agree. The percentage says how far along it is. Each step name is a label on its own:
+no article, no sentence, so `nest.cut.progress` can put it anywhere a translation needs it.
+
+**Assumed** — the step names describe the insect's state ("Legs off"), not the work ("Cutting the
+legs"); step 0 is "On its back" rather than "Whole", because "Cutting: 12% · Whole" reads as a
+contradiction. `nest.cut.progress` gains `{step}` and a max of 32. Cost to change: four strings; the
+card line must fit "Cutting: 100% · Shell pried" plus 30%.
 
 A cut step is silent: the HUD's food rises and the panel's percentage moves. Food that does not fit
 when a step is cut raises `toast.stores.full` as a delivery does.
@@ -942,7 +961,11 @@ screen looks, and round buttons in the bottom-right corner stand in for the keys
 top-right corner. "Touch device" here means the web page's test: a touch screen and no fine
 pointer, or `?touch=1` in the address. The labels are the device's button names, so the
 `[Mark]`, `[Tap]`, `[Interact]` and `[Pause]` glyphs in every other string read as the same words
-("Mark", "Tap", "Interact", "Menu") on touch. Button labels are one word, no full stop.
+("Mark", "Tap", "Interact", "Menu") on touch. The exception is while the nest panel or a card is
+open: the Mark and Interact buttons are labelled Back and Confirm, and the glyphs follow the
+buttons, so `[Mark]` reads "Back" and `[Interact]` reads "Confirm" in every string shown then (the
+nest panel's prompts, the outcome card). A glyph always names the word on the button it means.
+Button labels are one word, no full stop.
 
 | key | text | when shown | max |
 |---|---|---|---|
@@ -953,8 +976,8 @@ pointer, or `?touch=1` in the address. The labels are the device's button names,
 | `touch.button.interact.alarm` | Alarm | Interact button, where Interact raises the alarm against the bird | 8 |
 | `touch.button.sprint` | Run | The smallest corner button, while no panel is open. A latch: tap to run, tap again to walk | 5 |
 | `touch.button.pause` | Menu | Top-right corner, always. Opens credits and sound on the first press | 5 |
-| `touch.button.back` | Back | The Mark button, while the nest panel is open | 8 |
-| `touch.button.confirm` | Confirm | The Interact button, while the nest panel is open | 8 |
+| `touch.button.back` | Back | The Mark button, while the nest panel or a card (the outcome card, credits) is open. `[Mark]` reads as this word then | 8 |
+| `touch.button.confirm` | Confirm | The Interact button, at the same times. `[Interact]` reads as this word then | 8 |
 
 `hint.credits` is not shown on touch.
 
@@ -965,6 +988,12 @@ is always on screen. Cost to change: one condition in the HUD.
 a player calls it) and "Menu" for Pause (there is nothing to pause or release on touch: it opens
 credits and sound). Written with the touch plan, not by a copy pass. Cost to change: one string
 each; Sprint and Menu are the device's button names, so `InputGlyphs` follows them.
+
+**Assumed** — inside the nest panel and on cards the prompts name the buttons as labelled
+("Confirm Dig a brood chamber", "Back To the garden"), rather than the buttons taking the action
+names. "Mark" on a button that closes a panel would read as laying a trail. This changes how earlier
+settled prompts read on touch, not their keys. Cost to change: the glyph rule in `InputGlyphs` for
+the two modes.
 
 **Assumed** — Run is a latch rather than a button held down, because a thumb cannot hold it
 and steer the camera at once. It turns itself off half a second after the joystick is let go.
