@@ -126,10 +126,34 @@ the panel orders digging only; recruiting stays with trails and taps.
 
 ## The session
 
-A game is **one year**: four seasons of ten days, about four hours at the six-minute day.
-The year ends with an outcome — the colony's size and stores as winter breaks, or its
-death — and then keeps going as an open sandbox for anyone who wants to stay. Pacing,
-finds and threats are tuned to that clock; the save holds one colony.
+A game is a **run of years**. A year is four seasons of ten days, about four hours at the
+six-minute day. Each year ends as winter breaks with an outcome: the workers alive, shown with the
+stores, the peak and the year's totals, and from the second year with the count the spring before.
+The game holds there and offers two ways on:
+
+- **Carry on to the next year.** The colony keeps everything it has: workers, brood, stores,
+  chambers, tier. Winter has worn the thatch down to half. A new spring begins, one step harder than
+  the last. Finds are scarcer. Spiders, birds and raids come more often, and from its first day. The
+  rival colony starts the year stronger, and winter costs more. Each year from the second to the
+  fifth also brings one new thing. In year 2 the rival raids in winter too. In year 3 fallen berries
+  appear: rich food that spoils within a day. In year 4 winter comes two days early. In year 5 up to
+  three spiders hunt at once. After year 5 the garden gets no harder. A card at the start of each
+  new year names what has changed. The run goes on until the colony dies. Then the card counts the
+  years it survived, its best spring and the run's totals.
+- **Stay in the garden.** The garden goes on at the difficulty of the year just ended, with no
+  more cards: each year's end is a toast. There is no way back into the run.
+
+The first year is the gentle one. After it, most colonies last three to five years, and only the
+best hold on beyond the fifth. The HUD clock shows the year from the second year on, and the season
+goals start over each year. The save holds one colony and its run. The rules and numbers are in
+[SIM_M5_NEXT_YEAR.md](SIM_M5_NEXT_YEAR.md).
+
+**Assumed** — the game goes on by carrying the colony into harder years, not by a second species.
+Cost to change: low. A species could still come later, as a choice when a new colony begins, and
+would use the same run. **Assumed** — the difficulty curve and its numbers, the one new thing a
+year, that the curve stops at year 5, that the thatch halves and the rival colony starts afresh each
+year, and that staying is final. Cheap: data and one rule. **Assumed** — a longer winter is taken
+out of autumn rather than added to the year. Cost to change: a day or two of clock and save work.
 
 The seasons change the garden and the colony. Finds appear through spring, summer and autumn,
 and none appear in winter. Seeds and leaves are most common in autumn, dead insects in summer,
@@ -137,8 +161,8 @@ and pinecones come through summer and autumn. The queen lays half as much in aut
 all in winter. In winter each worker eats a quarter more, unless the nest has been thatched
 with pinecones. The outcome is the number of workers alive as the new spring begins, shown
 with the stores, the peak and the year's totals. If every worker and every brood is lost
-first, the outcome is the colony's death and the day it came, and the screen offers a new
-colony in the same garden; the old save is replaced. **Assumed** — starting over after the
+first, the outcome is the colony's death and the day it came, with the run's years beside it, and
+the screen offers a new colony in the same garden; the old save is replaced. **Assumed** — starting over after the
 colony dies is always offered. It is separate from the player ant's own death (see Time,
 weather, threats). Cheap to change. **Assumed** — these season
 effects and the headline measure. Cheap to change.
@@ -197,7 +221,7 @@ change: the goals are read from the colony's counts, not stored, so editing them
 a Young colony takes seeds, leaves and sugar and has 4 slots to dig; an Established one adds dead
 insects and 7 slots; a Mature one adds pinecones and 10 slots.
 
-The economy stays gentle: a colony's hauls comfortably cover its upkeep. The pressure comes from
+In the first year the economy stays gentle: a colony's hauls comfortably cover its upkeep. The pressure comes from
 winter and from what the nest can hold, not from scarcity.
 
 ## Finds
@@ -209,6 +233,7 @@ winter and from what the nest can hold, not from scarcity.
 | Leaf | 4 | 1 | 10 | Low value, light; nest material later. |
 | Dead insect | 10 | 2 | 120 | Needs a processing chamber; spoils over three days in the garden; cut up in the nest over half a day. |
 | Pinecone | 16 | 3 | — | Shelter, not food: each one hauled home thatches the nest against winter (up to four). |
+| Fallen berry | 6 | 1 | 60 | From the third year of a run, in summer and autumn; spoils in the garden within a day. |
 
 The player counts as one ant toward starting the haul, while standing within reach of the
 find; the party then carries it home whether or not you stay. Numbers are the first cut and live in
@@ -251,7 +276,7 @@ point is that the player's movement *is* the order, not a cursor.
 ## Time, weather, threats
 
 A day is **Assumed** six real minutes, a season ten days. Night slows everyone outside the nest.
-No threat comes on the first day.
+No threat comes on the first day of the first year.
 
 **Weather** is clear, overcast or rain, and changes only on the quarter day. Rain never follows
 clear directly: overcast comes first, and the HUD shows rain one quarter day before it starts.
@@ -279,7 +304,7 @@ every worker on the way out turns home. The fight is at the nest, against every 
 fuller nest beats a raid cheaply, and the defenders fight harder while you are there with them.
 Raiders loot the stores while they fight, and for a while longer if they break through; a dead
 insect still waiting to be cut is too big for them to carry off. Every
-raider killed weakens the rival. No raids in rain or winter.
+raider killed weakens the rival. No raids in rain, and none in winter in the first year.
 
 Each threat is arithmetic against the colony's counts, not a boss fight. The queen and the brood
 are never targets. A reasonable player loses about one worker in eight that they raise to threats
@@ -302,7 +327,8 @@ The full M1 rules — items, colony upkeep, trails, recruitment, hauling, tick o
 tests — are specified in [SIM.md](SIM.md). Colony building — chambers, queen and brood, tier,
 finds that come and go, the year and its outcome, saves — is in [SIM_M2.md](SIM_M2.md). Weather,
 spiders, birds, raids and the player ant's death are in [SIM_M3.md](SIM_M3.md). Cutting up dead
-insects in the processing chamber is in [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md).
+insects in the processing chamber is in [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md). The run of years
+after the first is in [SIM_M5_NEXT_YEAR.md](SIM_M5_NEXT_YEAR.md).
 Everything the player reads is in [UI_COPY.md](UI_COPY.md).
 
 The simulation is headless: a fixed 10 Hz tick, one seed (driving one random stream for the
@@ -384,4 +410,8 @@ stream for weather and threats; colonies saved before M3 continue with fresh wea
 no nest-view state in the save. From [SIM_M4_PROCESSING.md](SIM_M4_PROCESSING.md): only dead insects
 need cutting; two cutters a chamber, half a day a carcass, rot after two days; cutters die after
 idle workers and are never taken by taps; uncut insects are never looted; the winter bar counts only
-food already in the stores; the dead-insect goal is met on delivery.
+food already in the stores; the dead-insect goal is met on delivery. From
+[SIM_M5_NEXT_YEAR.md](SIM_M5_NEXT_YEAR.md): carrying on into harder years rather than a second species;
+the per-year difficulty and its cap at year 5; the berry; winter growing into autumn; thatch halving
+and the rival starting afresh each year; staying is final; the per-year seed; old sandbox saves stay
+in the sandbox.

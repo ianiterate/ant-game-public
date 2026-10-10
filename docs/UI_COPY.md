@@ -5,7 +5,7 @@ vertical slice; [M2 — colony building](#m2--colony-building) adds the nest, th
 [M3 — weather and threats](#m3--weather-and-threats) adds weather, spiders, birds, raids and the
 player ant's death, and [M5 — Purpose](#m5--purpose) adds the opening card, the winter bar,
 the season goals and the antennae sense, [Touch](#touch) adds the on-screen buttons of
-phones and tablets, and [Nest view](#nest-view) adds the labels of the animated cutaway, and [Processing](#processing) adds the cutting of dead insects. Code references the **key**; the
+phones and tablets, and [Nest view](#nest-view) adds the labels of the animated cutaway, and [Processing](#processing) adds the cutting of dead insects, and [Years](#years) adds the run of years after the first. Code references the **key**; the
 text here is the source for the string table. The rules behind each line are in
 [GAME.md](GAME.md) and [SIM.md](SIM.md). This file only puts them into words.
 
@@ -1039,6 +1039,77 @@ NEST_VIEW_THEME.md). It is the only string that says so. Cost to change: one str
 
 **Assumed** — `nestview.store.spilled` needs the view to know a delivery overflowed. If the sim does
 not report the food lost at the door, the label is left out until it does. Cost: one event field.
+
+---
+
+## Years
+
+The strings for carrying a colony into later years: the outcome card's two ways on, the run's lines,
+the card that opens each new year, and the HUD year. The rules are in [GAME.md](GAME.md) ("The
+session") and [SIM_M5_NEXT_YEAR.md](SIM_M5_NEXT_YEAR.md). Voice, format and parameter widths hold.
+New parameters, at their widest: `{year}` and `{years}` are 2 digits, `{days}` and `{n}` 1.
+
+Changed elsewhere, with no new text: the survived card no longer shows `outcome.continue`. In a run
+the card offers the two actions below, and in the sandbox there is no card. `hud.day.year` and
+`toast.dawn.year` read `year = World.Year` and `day = DayOfYear + 1` from year 2 on.
+
+### The outcome card in a run
+
+The survived card opens on `YearEnded` only while `AwaitingYear` (a run), and again when a save taken
+at the hold is loaded. Interact carries on; Mark (or Pause) stays. Neither confirms twice: both keep
+the colony.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `outcome.carry_on` | [Interact] Carry on to year {year} | First action; `year = Year + 1`. Sends `BeginYear` | 30 |
+| `outcome.stay` | [Mark] Stay in the garden | Second action. Sends `StayInGarden` | 30 |
+| `outcome.run.keep_going` | Carry on into a harder year, or stay in this garden as it is. | In place of `outcome.keep_going` while `AwaitingYear` | 70 |
+| `outcome.line.last_spring` | Last spring: {workers} | Under the headline from year 2: the previous record's `Workers` | 24 |
+
+### The run's lines
+
+Under the year's lines, on the survived card from year 2 and on the death card whenever `Years`
+holds a survived year.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `run.line.years` | Years survived: {years} | `YearsSurvived` | 24 |
+| `run.line.best` | Best spring: {workers}, in year {year} | The survived record with the most `Workers`; the earliest on a tie | 40 |
+| `run.line.totals` | All years. Hatched: {raised}. Lost to threats: {killed} | `RunStats + Stats`: `WorkersRaised`, `WorkersKilled` | 52 |
+| `run.died.keep_going` | The run ends here. The garden goes on without it. | In place of `outcome.died.keep_going` when the colony dies in year 2 or later | 70 |
+| `toast.year.garden` | Spring again, year {year}. Workers alive: {workers} | A year ends in the sandbox (`YearEnded`, `Mode == Sandbox`): no card | 60 |
+
+### The new year's card
+
+Shown on `YearBegan`, in the opening card's layout: title, body, one line on what is new, the
+measure, the action. Interact, Mark or Pause closes it. It is not shown on a load.
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `card.year.title` | Year {year} | Card title | 30 |
+| `card.year.body` | The colony wakes to a harder garden: fewer finds, more threats, a stronger rival colony and a colder winter. | Under the title | 160 |
+| `card.year.new.winter_raids` | New this year: the rival colony raids in winter too. | `WinterRaidsPerDay` rose from 0 at this level | 70 |
+| `card.year.new.berries` | New this year: fallen berries. Rich food, but they spoil in a day. | A find's `FromLevel` equals this level | 70 |
+| `card.year.new.early_winter` | New this year: winter comes {days} days early. | `EarlyWinterDays` rose from 0; `days` = its value | 70 |
+| `card.year.new.spiders` | New this year: up to {n} spiders at once. | `SpiderMax` rose; `n` = its value | 70 |
+| `card.year.new.none` | Nothing new this year. The garden is as hard as it gets. | Level unchanged from last year (year 6 on) | 70 |
+| `card.open.measure` | (unchanged) | Reused, where the headline sits | — |
+| `card.open.begin` | (unchanged) | Reused as the action | — |
+
+The "new" line is found by comparing this level's row with the last one, so the sim holds no
+presentation field. If more than one thing changes at a level, the first in the table order wins.
+
+### Finds
+
+| key | text | when shown | max |
+|---|---|---|---|
+| `item.berry` | Fallen berry | The interaction probe targets the find; antennae label | 20 |
+
+**Assumed** — "Fallen berry" as the new find's name, and "Rich food" rather than a number on its
+card line. It is a placeholder for `world-builder`. Cost to change: two strings.
+
+**Assumed** — the season toasts are reused for early winter: "Winter begins." on day 28 needs no new
+string. Cost to change: one string and one condition.
 
 ---
 

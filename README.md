@@ -12,11 +12,11 @@ elsewhere.
 
 - **Design:** [docs/GAME.md](docs/GAME.md) — what the game is right now, including what is
   still undecided.
-- **Build:** 2026-10-09 (1e5f3f9)
+- **Build:** 2026-10-10 (beabf95)
 
 ## What you can do right now
 
-You have one year, and one measure: how many workers are alive when spring comes back. The
+Each year has one measure: how many workers are alive when spring comes back. Survive it and you can carry the colony into a harder year, for as many years as it lasts. The
 game says so when a colony begins, a winter bar in the corner shows stores against what winter
 will cost, and each season sets three goals that explain themselves. Your antennae sense finds
 within a hand's width: chevrons at the screen edge point at them, and the grass parts around
@@ -36,8 +36,8 @@ spider and walk home to call a party of defenders. A bird's shadow follows a wor
 few seconds before it strikes; **Interact** near it to raise the alarm. A rival colony
 raids the nest and loots the stores; be home when they come. If you are taken, you return
 as a fresh worker after a few seconds. Autumn slows the queen and winter brings nothing new
-and costs more, unless you have thatched the nest with pinecones. The year ends when spring
-returns; the game saves itself in your browser each day. Click once in the page to lock the
+and costs more, unless you have thatched the nest with pinecones. When spring returns the year ends: carry on into the next, harder year, or
+stay in the garden as a sandbox. The game saves itself in your browser each day. Click once in the page to lock the
 mouse; Esc releases it.
 
 ## Controls
